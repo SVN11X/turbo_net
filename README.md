@@ -1,38 +1,27 @@
-# turbo_net - versión con servicios externos
+# turbo_net Pro
 
-Esta versión de turbo_net no usa archivos `.bin` ni servidor propio.  
-La medición se realiza contra servicios externos de Cloudflare Speed Test:
-
-- Descarga: `https://speed.cloudflare.com/__down`
-- Subida: `https://speed.cloudflare.com/__up`
+Test de velocidad web con servicios externos de Cloudflare.
 
 ## Archivos necesarios
 
-Solo necesitas subir estos archivos a tu repositorio:
+- `index.html`
+- `.nojekyll`
 
-```text
-index.html
-.nojekyll
-README.md
-```
+No requiere archivos `.bin` ni servidor propio.
 
 ## Publicación en GitHub Pages
 
 1. Sube los archivos al repositorio.
-2. Entra a `Settings > Pages`.
-3. Selecciona `Deploy from branch`.
-4. Elige `main` y `/root`.
-5. Guarda los cambios.
+2. Activa GitHub Pages desde `Settings > Pages`.
+3. Selecciona `Deploy from branch`, rama `main`, carpeta `/root`.
 
-## Importante
+## Funciones
 
-Los resultados pueden variar porque dependen de:
-
-- WiFi o cable de red.
-- Congestión de red.
-- Navegador.
-- VPN.
-- Distancia al nodo de Cloudflare.
-- Bloqueadores o políticas CORS.
-
-Esta versión es más realista que usar archivos `.bin` dentro de GitHub Pages, porque evita caché local o archivos mal generados.
+- Ping
+- Jitter
+- Descarga
+- Subida
+- Pérdida HTTP
+- Historial local
+- Copiar resultado
+- Interfaz tipo velocímetro con aguja animada

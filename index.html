@@ -4,387 +4,389 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>turbo_net | Test de velocidad</title>
-  <meta name="description" content="turbo_net mide ping, jitter, descarga y subida usando servicios externos de Cloudflare." />
   <style>
-    :root {
-      --bg: #020617;
-      --panel: rgba(15, 23, 42, 0.88);
-      --panel-2: rgba(17, 24, 39, 0.92);
-      --border: rgba(148, 163, 184, 0.24);
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --cyan: #22d3ee;
-      --blue: #2563eb;
-      --green: #22c55e;
-      --yellow: #facc15;
-      --red: #fb7185;
-      --shadow: rgba(0, 0, 0, 0.34);
+    :root{
+      --bg:#020817;
+      --panel:#08142b;
+      --panel-soft:#0d1c38;
+      --panel-glass:rgba(8,20,43,.82);
+      --border:rgba(159,181,224,.20);
+      --text:#f8fbff;
+      --muted:#8fa4c7;
+      --muted2:#61789e;
+      --cyan:#25d9ff;
+      --blue:#2f7dff;
+      --green:#23d16f;
+      --yellow:#ffd166;
+      --red:#ff5c7c;
+      --shadow:0 28px 90px rgba(0,0,0,.32);
+      --radius:30px;
+      --needle-angle:-135deg;
+      --arc-angle:0deg;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
+    *{box-sizing:border-box;margin:0;padding:0}
 
-    body {
-      min-height: 100vh;
-      color: var(--text);
+    body{
+      min-height:100vh;
+      color:var(--text);
       background:
-        radial-gradient(circle at top left, rgba(34, 211, 238, 0.18), transparent 35%),
-        radial-gradient(circle at top right, rgba(37, 99, 235, 0.20), transparent 38%),
-        linear-gradient(135deg, #020617 0%, #07111f 52%, #020617 100%);
-      padding: 24px;
+        radial-gradient(circle at 8% 8%, rgba(37,217,255,.18), transparent 30%),
+        radial-gradient(circle at 92% 5%, rgba(47,125,255,.18), transparent 34%),
+        radial-gradient(circle at 50% 115%, rgba(35,209,111,.08), transparent 35%),
+        linear-gradient(180deg,#06142c 0%,#020817 100%);
+      font-family:Inter,Segoe UI,Arial,Helvetica,sans-serif;
+      padding:32px;
     }
 
-    .page {
-      width: min(1180px, 100%);
-      margin: 0 auto;
+    .page{max-width:1420px;margin:0 auto}
+
+    header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:18px;
+      margin-bottom:28px;
     }
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 18px;
-      margin-bottom: 24px;
+    .brand{display:flex;align-items:center;gap:16px}
+
+    .logo{
+      width:52px;height:52px;border-radius:17px;
+      display:grid;place-items:center;font-size:25px;
+      background:linear-gradient(135deg,var(--cyan),var(--blue));
+      box-shadow:0 16px 34px rgba(37,217,255,.25);
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
+    h1{
+      font-size:3rem;
+      line-height:.95;
+      font-weight:950;
+      letter-spacing:-2.4px;
     }
 
-    .logo {
-      width: 52px;
-      height: 52px;
-      display: grid;
-      place-items: center;
-      border-radius: 16px;
-      background: linear-gradient(145deg, #22d3ee, #2563eb);
-      box-shadow: 0 16px 40px rgba(34, 211, 238, 0.25);
-      font-size: 25px;
+    .brand p{margin-top:6px;color:#c8dcff;font-size:1rem}
+
+    .server-pill{
+      border:1px solid var(--border);
+      background:rgba(9,22,48,.72);
+      padding:13px 19px;
+      border-radius:999px;
+      color:#d7e8ff;
+      white-space:nowrap;
     }
 
-    h1 {
-      font-size: clamp(2rem, 4vw, 3.1rem);
-      line-height: 0.95;
-      letter-spacing: -2px;
+    .layout{
+      display:grid;
+      grid-template-columns:minmax(0,1.65fr) minmax(370px,.92fr);
+      gap:20px;
+      align-items:start;
     }
 
-    .subtitle {
-      color: #bae6fd;
-      margin-top: 6px;
-      font-size: 0.98rem;
+    .card{
+      background:var(--panel-glass);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(18px);
     }
 
-    .server-pill {
-      border: 1px solid var(--border);
-      color: #bfdbfe;
-      background: rgba(15, 23, 42, 0.62);
-      padding: 11px 17px;
-      border-radius: 999px;
-      white-space: nowrap;
-      font-size: 0.93rem;
+    .main-card{
+      min-height:840px;
+      padding:34px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
     }
 
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.95fr);
-      gap: 18px;
+    .gauge-stage{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
     }
 
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 30px;
-      box-shadow: 0 28px 80px var(--shadow);
-      backdrop-filter: blur(14px);
-    }
-
-    .main-card {
-      min-height: 710px;
-      padding: 34px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-
-    .gauge-wrap {
-      position: relative;
-      width: min(470px, 90vw);
-      aspect-ratio: 1;
-      display: grid;
-      place-items: center;
-      margin-bottom: 24px;
-    }
-
-    .gauge {
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
+    .gauge{
+      width:min(590px,88vw);
+      aspect-ratio:1/1;
+      position:relative;
+      display:grid;
+      place-items:center;
+      border-radius:50%;
       background:
-        conic-gradient(from 225deg,
-          #22d3ee 0deg,
-          #22c55e var(--angle),
-          rgba(30, 41, 59, 0.95) var(--angle),
-          rgba(30, 41, 59, 0.95) 270deg,
+        conic-gradient(
+          from 225deg,
+          #26d9ff 0deg,
+          #30e4c9 calc(var(--arc-angle) * .58),
+          #23d16f var(--arc-angle),
+          rgba(45,60,92,.70) var(--arc-angle),
+          rgba(45,60,92,.70) 270deg,
           transparent 270deg,
           transparent 360deg
         );
-      filter: drop-shadow(0 20px 50px rgba(34, 211, 238, 0.12));
+      filter:drop-shadow(0 0 24px rgba(37,217,255,.10));
     }
 
-    .gauge::before {
-      content: "";
-      position: absolute;
-      inset: 44px;
-      border-radius: 50%;
-      background: radial-gradient(circle at center, #020617 0%, #030712 70%, #020617 100%);
-      border: 1px solid rgba(148, 163, 184, 0.17);
-      box-shadow: inset 0 0 40px rgba(15, 23, 42, 0.94);
+    .gauge::before{
+      content:"";
+      position:absolute;
+      inset:42px;
+      border-radius:50%;
+      background:
+        radial-gradient(circle at 50% 35%,rgba(38,217,255,.10),transparent 44%),
+        radial-gradient(circle at 50% 70%,rgba(47,125,255,.10),transparent 52%),
+        #020817;
+      box-shadow:
+        inset 0 0 55px rgba(0,0,0,.55),
+        inset 0 0 0 1px rgba(159,181,224,.12);
+      z-index:1;
     }
 
-    .gauge-center {
-      z-index: 2;
-      text-align: center;
-      max-width: 82%;
+    .gauge::after{
+      content:"";
+      position:absolute;
+      inset:23px;
+      border-radius:50%;
+      border:1px solid rgba(159,181,224,.10);
+      z-index:0;
     }
 
-    .gauge-label {
-      color: var(--cyan);
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 3px;
-      font-weight: 900;
-      margin-bottom: 12px;
+    .tick-ring{
+      position:absolute;
+      inset:18px;
+      border-radius:50%;
+      z-index:2;
+      pointer-events:none;
     }
 
-    .gauge-value {
-      font-size: clamp(3.4rem, 8vw, 6.1rem);
-      font-weight: 950;
-      line-height: 0.92;
-      letter-spacing: -5px;
+    .tick{
+      position:absolute;
+      left:50%;top:50%;
+      width:2px;height:18px;
+      background:rgba(190,210,245,.32);
+      transform-origin:center -245px;
+      border-radius:999px;
+      opacity:.75;
     }
 
-    .gauge-unit {
-      color: var(--muted);
-      margin-top: 10px;
-      font-size: 1.08rem;
+    .tick.major{height:28px;width:3px;background:rgba(231,240,255,.58)}
+
+    .needle-wrap{
+      position:absolute;
+      width:10px;
+      height:44%;
+      left:50%;
+      top:10%;
+      transform-origin:50% 91%;
+      transform:translateX(-50%) rotate(var(--needle-angle));
+      transition:transform .14s linear;
+      z-index:5;
+      pointer-events:none;
     }
 
-    .scale {
-      width: min(470px, 90vw);
-      display: flex;
-      justify-content: space-between;
-      color: #64748b;
-      font-size: 0.85rem;
-      padding: 0 38px;
-      margin-top: -18px;
-      margin-bottom: 26px;
+    .needle{
+      position:absolute;
+      left:50%;bottom:0;
+      width:6px;height:100%;
+      transform:translateX(-50%);
+      border-radius:999px 999px 12px 12px;
+      background:linear-gradient(180deg,#ffffff 0%,#27dfff 42%,#2f7dff 100%);
+      box-shadow:0 0 22px rgba(37,217,255,.52);
     }
 
-    .controls {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      width: 100%;
+    .needle::before{
+      content:"";
+      position:absolute;
+      top:-9px;left:50%;
+      transform:translateX(-50%);
+      width:16px;height:16px;
+      border-radius:50%;
+      background:#fff;
+      box-shadow:0 0 18px rgba(255,255,255,.45);
     }
 
-    button,
-    select {
-      border: 1px solid var(--border);
-      color: var(--text);
-      background: rgba(15, 23, 42, 0.78);
-      border-radius: 999px;
-      padding: 15px 19px;
-      font-size: 0.98rem;
-      outline: none;
+    .center-cap{
+      position:absolute;
+      width:62px;height:62px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#f8fbff,#8acbff 55%,#2f7dff);
+      box-shadow:0 0 25px rgba(37,217,255,.26), inset 0 0 0 8px rgba(2,8,23,.78);
+      z-index:7;
     }
 
-    button {
-      cursor: pointer;
-      font-weight: 850;
-      transition: transform 0.18s ease, opacity 0.18s ease, border-color 0.18s ease;
+    .gauge-readout{
+      position:relative;
+      z-index:4;
+      text-align:center;
+      transform:translateY(78px);
+      width:78%;
     }
 
-    button:hover {
-      transform: translateY(-2px);
-      border-color: rgba(34, 211, 238, 0.48);
+    .gauge-label{
+      color:#22dfff;
+      font-size:.9rem;
+      font-weight:900;
+      letter-spacing:4px;
+      text-transform:uppercase;
+      margin-bottom:18px;
     }
 
-    button:disabled,
-    select:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-      transform: none;
+    .gauge-value{
+      font-size:clamp(4.3rem,8.2vw,7.6rem);
+      font-weight:950;
+      line-height:.92;
+      letter-spacing:-5px;
+      text-shadow:0 8px 28px rgba(0,0,0,.28);
     }
 
-    .primary {
-      border: none;
-      background: linear-gradient(135deg, #22d3ee, #2563eb);
-      box-shadow: 0 16px 34px rgba(37, 99, 235, 0.26);
-      padding-inline: 30px;
+    .gauge-unit{color:var(--muted);font-size:1.05rem;margin-top:9px}
+
+    .scale{
+      width:min(560px,86vw);
+      display:flex;
+      justify-content:space-between;
+      color:#7d92b8;
+      font-size:1rem;
+      margin-top:20px;
+      padding:0 18px;
     }
 
-    .secondary {
-      background: rgba(30, 41, 59, 0.9);
+    .controls{
+      margin-top:30px;
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:12px;
+      width:100%;
     }
 
-    aside {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
+    select,button{
+      border:1px solid var(--border);
+      border-radius:999px;
+      min-height:58px;
+      padding:16px 24px;
+      color:var(--text);
+      background:rgba(18,33,63,.90);
+      font-size:1rem;
+      outline:none;
     }
 
-    .side-card {
-      padding: 24px;
+    select{min-width:220px;cursor:pointer}
+
+    button{
+      cursor:pointer;
+      font-weight:900;
+      transition:transform .18s ease,opacity .18s ease,box-shadow .18s ease;
     }
 
-    .side-card h2 {
-      font-size: 1.18rem;
-      margin-bottom: 18px;
+    button:hover{transform:translateY(-2px)}
+    button:disabled{opacity:.55;cursor:not-allowed;transform:none}
+
+    .primary{
+      border:none;
+      background:linear-gradient(135deg,var(--cyan),var(--blue));
+      box-shadow:0 14px 28px rgba(37,217,255,.22);
+      padding-inline:30px;
     }
 
-    .results-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+    .secondary{background:rgba(30,43,70,.92)}
+
+    .side{display:flex;flex-direction:column;gap:18px}
+    .side-card{padding:22px}
+    .side-card h2{font-size:1.15rem;margin-bottom:18px}
+
+    .results-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
     }
 
-    .metric {
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 18px;
-      min-height: 118px;
-      background: rgba(15, 23, 42, 0.68);
+    .metric{
+      min-height:126px;
+      border:1px solid var(--border);
+      border-radius:22px;
+      background:rgba(10,22,47,.78);
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
     }
 
-    .metric span {
-      display: block;
-      color: var(--muted);
-      font-size: 0.88rem;
-      margin-bottom: 12px;
+    .metric span{color:#a8bad8;font-size:.94rem}
+    .metric strong{font-size:2rem;line-height:1;font-weight:950;letter-spacing:-1px;margin-top:9px}
+    .metric small{color:#91a6c7;font-size:.86rem;margin-top:7px}
+
+    .rating{
+      margin-top:16px;
+      display:inline-flex;
+      max-width:100%;
+      border-radius:999px;
+      padding:11px 16px;
+      background:rgba(35,209,111,.16);
+      color:#e5ffef;
+      font-weight:900;
+      font-size:.94rem;
     }
 
-    .metric strong {
-      display: block;
-      font-size: 1.75rem;
-      font-weight: 950;
-      letter-spacing: -0.5px;
-      overflow-wrap: anywhere;
+    .status-box{
+      min-height:80px;
+      display:flex;
+      align-items:center;
+      border:1px solid rgba(37,217,255,.28);
+      border-radius:20px;
+      background:rgba(13,74,116,.28);
+      color:#e5f7ff;
+      line-height:1.5;
+      padding:18px;
     }
 
-    .metric small {
-      display: block;
-      color: var(--muted);
-      font-size: 0.83rem;
-      margin-top: 8px;
+    .steps{list-style:none;display:grid;gap:12px;margin-top:16px;color:#a9bbd8}
+    .steps li{display:flex;align-items:center;gap:10px}
+    .dot{
+      width:15px;height:15px;border-radius:50%;background:#334866;
+      box-shadow:0 0 0 4px rgba(51,72,102,.24);
+      transition:all .22s ease;
+      flex-shrink:0;
+    }
+    .dot.done{background:var(--green);box-shadow:0 0 0 4px rgba(35,209,111,.16)}
+    .dot.active{background:var(--cyan);box-shadow:0 0 0 4px rgba(37,217,255,.16),0 0 18px rgba(37,217,255,.38)}
+
+    .history-list{display:grid;gap:10px}
+    .history-item{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      padding:14px 16px;
+      border-radius:18px;
+      border:1px solid var(--border);
+      background:rgba(10,22,47,.72);
+      color:#dde9fb;
+      font-size:.94rem;
+    }
+    .history-item small{display:block;color:#93a8ca;margin-bottom:4px}
+    .history-score{font-weight:950;white-space:nowrap;color:#f8fbff}
+
+    @media(max-width:1120px){
+      .layout{grid-template-columns:1fr}
+      .main-card{min-height:auto}
     }
 
-    .rating {
-      display: inline-flex;
-      max-width: 100%;
-      margin-top: 16px;
-      color: #dcfce7;
-      background: rgba(34, 197, 94, 0.18);
-      border: 1px solid rgba(34, 197, 94, 0.14);
-      border-radius: 999px;
-      padding: 10px 16px;
-      font-size: 0.92rem;
-      font-weight: 850;
-      line-height: 1.25;
-    }
-
-    .status-box {
-      background: rgba(14, 165, 233, 0.12);
-      border: 1px solid rgba(34, 211, 238, 0.32);
-      color: #e0f2fe;
-      border-radius: 20px;
-      padding: 16px;
-      line-height: 1.48;
-      font-size: 0.96rem;
-      margin-bottom: 16px;
-      min-height: 86px;
-    }
-
-    .steps {
-      list-style: none;
-      display: grid;
-      gap: 10px;
-      color: var(--muted);
-      font-size: 0.93rem;
-    }
-
-    .steps li {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #334155;
-      box-shadow: 0 0 0 4px rgba(51, 65, 85, 0.24);
-      flex: 0 0 auto;
-    }
-
-    .dot.done {
-      background: var(--green);
-      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.14);
-    }
-
-    .note {
-      margin-top: 18px;
-      padding: 15px;
-      background: rgba(250, 204, 21, 0.09);
-      border: 1px solid rgba(250, 204, 21, 0.22);
-      color: #fde68a;
-      border-radius: 18px;
-      font-size: 0.88rem;
-      line-height: 1.45;
-    }
-
-    .history {
-      margin-top: 16px;
-      display: grid;
-      gap: 8px;
-      color: var(--muted);
-      font-size: 0.86rem;
-    }
-
-    .history-item {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      background: rgba(15, 23, 42, 0.58);
-      border: 1px solid rgba(148, 163, 184, 0.12);
-    }
-
-    @media (max-width: 980px) {
-      body { padding: 18px; }
-      header { flex-direction: column; align-items: flex-start; }
-      .layout { grid-template-columns: 1fr; }
-      .main-card { min-height: auto; padding: 26px 18px; }
-    }
-
-    @media (max-width: 540px) {
-      .controls button,
-      .controls select { width: 100%; }
-      .results-grid { grid-template-columns: 1fr; }
-      .server-pill { width: 100%; text-align: center; }
-      .gauge-value { letter-spacing: -3px; }
-      .scale { padding: 0 20px; }
+    @media(max-width:720px){
+      body{padding:16px}
+      header{flex-direction:column;align-items:flex-start}
+      h1{font-size:2.35rem}
+      .brand p{font-size:.95rem}
+      .main-card{padding:22px 16px}
+      .results-grid{grid-template-columns:1fr}
+      select,button{width:100%}
+      .controls{flex-direction:column}
+      .gauge::before{inset:30px}
+      .center-cap{width:48px;height:48px}
+      .gauge-readout{transform:translateY(58px)}
+      .gauge-value{letter-spacing:-3px}
     }
   </style>
 </head>
@@ -392,47 +394,44 @@
   <div class="page">
     <header>
       <div class="brand">
-        <div class="logo" aria-hidden="true">⚡</div>
+        <div class="logo">⚡</div>
         <div>
           <h1>turbo_net</h1>
-          <p class="subtitle">Test de velocidad con servicios externos: ping, jitter, descarga y subida.</p>
+          <p>Test de velocidad</p>
         </div>
       </div>
-      <div class="server-pill" id="serverName">Servidor externo: Cloudflare</div>
+      <div class="server-pill">Cloudflare</div>
     </header>
 
     <main class="layout">
       <section class="card main-card">
-        <div class="gauge-wrap" aria-label="Velocímetro de velocidad">
-          <div class="gauge" id="gauge" style="--angle: 0deg;"></div>
-          <div class="gauge-center">
-            <div class="gauge-label" id="gaugeLabel">Resultado</div>
-            <div class="gauge-value" id="gaugeValue">0.00</div>
-            <div class="gauge-unit">Mbps</div>
+        <div class="gauge-stage">
+          <div class="gauge" id="gauge">
+            <div class="tick-ring" id="tickRing"></div>
+            <div class="needle-wrap" id="needleWrap"><div class="needle"></div></div>
+            <div class="center-cap"></div>
+            <div class="gauge-readout">
+              <div class="gauge-label" id="gaugeLabel">LISTO</div>
+              <div class="gauge-value" id="gaugeValue">0.00</div>
+              <div class="gauge-unit">Mbps</div>
+            </div>
           </div>
-        </div>
-
-        <div class="scale" aria-hidden="true">
-          <span>0</span><span>100</span><span>250</span><span>500</span><span>1000+</span>
+          <div class="scale"><span>0</span><span>100</span><span>250</span><span>500</span><span>1000+</span></div>
         </div>
 
         <div class="controls">
-          <select id="modeSelect" aria-label="Modo de prueba">
-            <option value="balanced">Modo recomendado</option>
-            <option value="lite">Modo liviano</option>
-            <option value="intense">Modo intensivo</option>
+          <select id="modeSelect">
+            <option value="recommended">Modo recomendado</option>
+            <option value="light">Modo ligero</option>
+            <option value="strong">Modo intensivo</option>
           </select>
           <button class="primary" id="startBtn">Iniciar test completo</button>
           <button class="secondary" id="copyBtn">Copiar resultado</button>
           <button class="secondary" id="resetBtn">Reiniciar</button>
         </div>
-
-        <div class="note">
-          Esta versión no usa archivos .bin ni servidor propio. La medición se realiza contra la red externa de Cloudflare. Los resultados pueden variar según WiFi, congestión, navegador, VPN, horario y distancia al nodo más cercano.
-        </div>
       </section>
 
-      <aside>
+      <aside class="side">
         <section class="card side-card">
           <h2>Resultados</h2>
           <div class="results-grid">
@@ -443,409 +442,319 @@
             <div class="metric"><span>Pérdida HTTP</span><strong id="lossResult">--</strong><small>%</small></div>
             <div class="metric"><span>Datos usados</span><strong id="dataUsedResult">--</strong><small>MB aprox.</small></div>
           </div>
-          <div class="rating" id="ratingResult">Esperando prueba...</div>
+          <div class="rating" id="ratingResult">Esperando prueba</div>
         </section>
 
         <section class="card side-card">
-          <h2>Estado de la prueba</h2>
-          <div class="status-box" id="statusBox">Presiona “Iniciar test completo” para comenzar.</div>
+          <h2>Estado</h2>
+          <div class="status-box" id="statusBox">Presiona “Iniciar test completo”.</div>
           <ul class="steps">
-            <li><span class="dot" id="stepPing"></span> Latencia y estabilidad</li>
-            <li><span class="dot" id="stepDownload"></span> Descarga externa</li>
-            <li><span class="dot" id="stepUpload"></span> Subida externa</li>
-            <li><span class="dot" id="stepSummary"></span> Resumen final</li>
+            <li><span class="dot" id="stepPing"></span> Latencia</li>
+            <li><span class="dot" id="stepDownload"></span> Descarga</li>
+            <li><span class="dot" id="stepUpload"></span> Subida</li>
+            <li><span class="dot" id="stepSummary"></span> Resumen</li>
           </ul>
         </section>
 
         <section class="card side-card">
-          <h2>Historial local</h2>
-          <div class="history" id="historyList">Aún no hay pruebas guardadas.</div>
+          <h2>Historial</h2>
+          <div class="history-list" id="historyList"></div>
         </section>
       </aside>
     </main>
   </div>
 
   <script>
-    const ENDPOINT = "https://speed.cloudflare.com";
-    const DOWNLOAD_URL = `${ENDPOINT}/__down`;
-    const UPLOAD_URL = `${ENDPOINT}/__up`;
-
-    const TEST_MODES = {
-      lite: {
-        name: "Modo liviano",
-        latencySamples: 6,
-        downloadBytes: [1_000_000, 5_000_000, 10_000_000],
-        uploadBytes: [1_000_000, 5_000_000]
-      },
-      balanced: {
-        name: "Modo recomendado",
-        latencySamples: 9,
-        downloadBytes: [1_000_000, 5_000_000, 25_000_000, 50_000_000],
-        uploadBytes: [1_000_000, 5_000_000, 10_000_000, 25_000_000]
-      },
-      intense: {
-        name: "Modo intensivo",
-        latencySamples: 12,
-        downloadBytes: [5_000_000, 25_000_000, 50_000_000, 100_000_000],
-        uploadBytes: [5_000_000, 10_000_000, 25_000_000, 50_000_000]
-      }
+    const els={
+      gauge:document.getElementById('gauge'),
+      tickRing:document.getElementById('tickRing'),
+      gaugeValue:document.getElementById('gaugeValue'),
+      gaugeLabel:document.getElementById('gaugeLabel'),
+      modeSelect:document.getElementById('modeSelect'),
+      startBtn:document.getElementById('startBtn'),
+      copyBtn:document.getElementById('copyBtn'),
+      resetBtn:document.getElementById('resetBtn'),
+      pingResult:document.getElementById('pingResult'),
+      jitterResult:document.getElementById('jitterResult'),
+      downloadResult:document.getElementById('downloadResult'),
+      uploadResult:document.getElementById('uploadResult'),
+      lossResult:document.getElementById('lossResult'),
+      dataUsedResult:document.getElementById('dataUsedResult'),
+      ratingResult:document.getElementById('ratingResult'),
+      statusBox:document.getElementById('statusBox'),
+      stepPing:document.getElementById('stepPing'),
+      stepDownload:document.getElementById('stepDownload'),
+      stepUpload:document.getElementById('stepUpload'),
+      stepSummary:document.getElementById('stepSummary'),
+      historyList:document.getElementById('historyList')
     };
 
-    const el = {
-      gauge: document.getElementById("gauge"),
-      gaugeLabel: document.getElementById("gaugeLabel"),
-      gaugeValue: document.getElementById("gaugeValue"),
-      modeSelect: document.getElementById("modeSelect"),
-      startBtn: document.getElementById("startBtn"),
-      copyBtn: document.getElementById("copyBtn"),
-      resetBtn: document.getElementById("resetBtn"),
-      serverName: document.getElementById("serverName"),
-      pingResult: document.getElementById("pingResult"),
-      jitterResult: document.getElementById("jitterResult"),
-      downloadResult: document.getElementById("downloadResult"),
-      uploadResult: document.getElementById("uploadResult"),
-      lossResult: document.getElementById("lossResult"),
-      dataUsedResult: document.getElementById("dataUsedResult"),
-      ratingResult: document.getElementById("ratingResult"),
-      statusBox: document.getElementById("statusBox"),
-      historyList: document.getElementById("historyList"),
-      stepPing: document.getElementById("stepPing"),
-      stepDownload: document.getElementById("stepDownload"),
-      stepUpload: document.getElementById("stepUpload"),
-      stepSummary: document.getElementById("stepSummary")
-    };
+    const HISTORY_KEY='turbo_net_pro_history';
+    let displayedSpeed=0;
+    let targetSpeed=0;
+    let loopId=null;
+    let totalDataUsedMb=0;
+    let lastResult=null;
 
-    let lastResult = null;
-    let usedBytes = 0;
-    let failedRequests = 0;
-    let totalRequests = 0;
-
-    function uniqueId() {
-      return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    }
-
-    function format(value, decimals = 2) {
-      return Number.isFinite(value) ? value.toFixed(decimals) : "--";
-    }
-
-    function bytesToMb(bytes) {
-      return bytes / 1_000_000;
-    }
-
-    function setStatus(message) {
-      el.statusBox.textContent = message;
-    }
-
-    function setBusy(busy) {
-      el.startBtn.disabled = busy;
-      el.modeSelect.disabled = busy;
-    }
-
-    function setStep(node, done) {
-      node.classList.toggle("done", done);
-    }
-
-    function resetSteps() {
-      [el.stepPing, el.stepDownload, el.stepUpload, el.stepSummary].forEach(node => setStep(node, false));
-    }
-
-    function updateGauge(mbps, label) {
-      const value = Number.isFinite(mbps) ? Math.max(0, mbps) : 0;
-      const max = 1000;
-      const angle = Math.min(value / max, 1) * 270;
-      el.gauge.style.setProperty("--angle", `${angle}deg`);
-      el.gaugeValue.textContent = value.toFixed(2);
-      el.gaugeLabel.textContent = label;
-    }
-
-    function percentile(values, p) {
-      const arr = values.filter(Number.isFinite).sort((a, b) => a - b);
-      if (!arr.length) return NaN;
-      const index = Math.min(arr.length - 1, Math.max(0, Math.floor((arr.length - 1) * p)));
-      return arr[index];
-    }
-
-    function median(values) {
-      return percentile(values, 0.5);
-    }
-
-    function calculateJitter(times) {
-      const arr = times.filter(Number.isFinite);
-      if (arr.length < 2) return 0;
-      const diffs = arr.slice(1).map((value, index) => Math.abs(value - arr[index]));
-      return diffs.reduce((sum, value) => sum + value, 0) / diffs.length;
-    }
-
-    function getRating(download, upload, ping) {
-      if (!Number.isFinite(download) || !Number.isFinite(upload)) return "No se pudo evaluar la conexión.";
-      if (download >= 500 && upload >= 100 && ping <= 35) return "Excelente para streaming, juegos, clases y trabajo intensivo";
-      if (download >= 150 && upload >= 30 && ping <= 60) return "Muy buena para streaming, videollamadas y trabajo diario";
-      if (download >= 50 && upload >= 10) return "Buena para navegación, clases y videollamadas";
-      if (download >= 15 && upload >= 3) return "Aceptable para uso básico";
-      return "Limitada: puede presentar problemas en videollamadas o streaming";
-    }
-
-    async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-      try {
-        totalRequests += 1;
-        const response = await fetch(url, {
-          ...options,
-          cache: "no-store",
-          signal: controller.signal
-        });
-        if (!response.ok) {
-          failedRequests += 1;
-          throw new Error(`Respuesta HTTP ${response.status}`);
-        }
-        return response;
-      } catch (error) {
-        failedRequests += 1;
-        throw error;
-      } finally {
-        clearTimeout(timer);
+    function createTicks(){
+      const start=-135;
+      const sweep=270;
+      const count=28;
+      els.tickRing.innerHTML='';
+      for(let i=0;i<=count;i++){
+        const tick=document.createElement('div');
+        tick.className='tick'+(i%7===0?' major':'');
+        const angle=start+(sweep/count)*i;
+        tick.style.transform=`translate(-50%,-50%) rotate(${angle}deg)`;
+        els.tickRing.appendChild(tick);
       }
     }
 
-    async function measureLatency(samples) {
-      const times = [];
-      for (let i = 0; i < samples; i++) {
-        const url = `${DOWNLOAD_URL}?bytes=0&measId=${uniqueId()}&r=${i}`;
-        const start = performance.now();
-        try {
-          const response = await fetchWithTimeout(url, { method: "GET" }, 8000);
-          await response.arrayBuffer();
-          times.push(performance.now() - start);
-        } catch {
-          // La pérdida HTTP se contabiliza en fetchWithTimeout.
-        }
-        await new Promise(resolve => setTimeout(resolve, 120));
+    function fmt(value,digits=2){return Number.isFinite(value)?value.toFixed(digits):'--'}
+    function setStatus(text){els.statusBox.textContent=text}
+    function setBusy(state){els.startBtn.disabled=state;els.modeSelect.disabled=state}
+    function setStep(el,state){el.classList.toggle('done',state);el.classList.remove('active')}
+    function activateStep(el){[els.stepPing,els.stepDownload,els.stepUpload,els.stepSummary].forEach(x=>x.classList.remove('active'));el.classList.add('active')}
+    function resetSteps(){[els.stepPing,els.stepDownload,els.stepUpload,els.stepSummary].forEach(x=>{x.classList.remove('done');x.classList.remove('active')})}
+
+    function speedRatio(speed){
+      const safe=Math.max(0,Math.min(speed,1000));
+      return Math.log10(safe+1)/Math.log10(1001);
+    }
+
+    function renderGauge(speed,label='LISTO'){
+      const ratio=speedRatio(speed);
+      const arc=ratio*270;
+      const needle=-135+arc;
+      els.gauge.style.setProperty('--arc-angle',arc+'deg');
+      els.gauge.style.setProperty('--needle-angle',needle+'deg');
+      els.gaugeValue.textContent=fmt(speed,2);
+      els.gaugeLabel.textContent=label;
+    }
+
+    function easeOutCubic(t){return 1-Math.pow(1-t,3)}
+
+    function animateGaugeTo(value,label='LISTO',duration=800){
+      if(loopId) cancelAnimationFrame(loopId);
+      const start=displayedSpeed;
+      const end=Number.isFinite(value)?value:0;
+      const startTime=performance.now();
+      function step(now){
+        const t=Math.min((now-startTime)/duration,1);
+        displayedSpeed=start+(end-start)*easeOutCubic(t);
+        renderGauge(displayedSpeed,label);
+        if(t<1){loopId=requestAnimationFrame(step)}else{displayedSpeed=end;renderGauge(end,label)}
       }
-      return {
-        ping: median(times),
-        jitter: calculateJitter(times),
-        points: times
-      };
+      loopId=requestAnimationFrame(step);
     }
 
-    async function readResponseBody(response) {
-      if (!response.body) {
-        await response.arrayBuffer();
-        return;
+    function startLiveGauge(label){
+      if(loopId) cancelAnimationFrame(loopId);
+      function loop(){
+        displayedSpeed += (targetSpeed-displayedSpeed)*0.10;
+        renderGauge(displayedSpeed,label);
+        loopId=requestAnimationFrame(loop);
       }
-
-      const reader = response.body.getReader();
-      while (true) {
-        const { done } = await reader.read();
-        if (done) break;
-      }
+      loopId=requestAnimationFrame(loop);
     }
 
-    async function downloadOnce(bytes) {
-      const url = `${DOWNLOAD_URL}?bytes=${bytes}&measId=${uniqueId()}`;
-      const start = performance.now();
-      const response = await fetchWithTimeout(url, { method: "GET" }, 60000);
-      await readResponseBody(response);
-      const seconds = (performance.now() - start) / 1000;
-      usedBytes += bytes;
-      return {
-        bytes,
-        seconds,
-        mbps: (bytes * 8) / seconds / 1_000_000
-      };
+    function stopLiveGauge(finalSpeed,label){
+      if(loopId) cancelAnimationFrame(loopId);
+      animateGaugeTo(finalSpeed,label,720);
     }
 
-    function makeUploadData(bytes) {
-      const data = new Uint8Array(bytes);
-      // Relleno por bloques para evitar límites de crypto.getRandomValues.
-      const blockSize = 65536;
-      for (let offset = 0; offset < data.length; offset += blockSize) {
-        const block = data.subarray(offset, Math.min(offset + blockSize, data.length));
-        crypto.getRandomValues(block);
-      }
-      return data;
+    function getModeConfig(){
+      const mode=els.modeSelect.value;
+      if(mode==='light') return {downloadBytes:10*1024*1024, uploadBytes:3*1024*1024, pingSamples:5};
+      if(mode==='strong') return {downloadBytes:40*1024*1024, uploadBytes:12*1024*1024, pingSamples:8};
+      return {downloadBytes:24*1024*1024, uploadBytes:7*1024*1024, pingSamples:6};
     }
 
-    async function uploadOnce(bytes) {
-      const url = `${UPLOAD_URL}?measId=${uniqueId()}`;
-      const data = makeUploadData(bytes);
-      const start = performance.now();
-      await fetchWithTimeout(url, {
-        method: "POST",
-        body: data
-      }, 60000);
-      const seconds = (performance.now() - start) / 1000;
-      usedBytes += bytes;
-      return {
-        bytes,
-        seconds,
-        mbps: (bytes * 8) / seconds / 1_000_000
-      };
-    }
-
-    function chooseBandwidth(samples) {
-      const valid = samples
-        .filter(item => item && Number.isFinite(item.mbps) && item.seconds >= 0.35)
-        .map(item => item.mbps);
-
-      if (valid.length) {
-        // Usamos mediana para evitar resultados inflados por muestras demasiado rápidas.
-        return median(valid);
-      }
-
-      const fallback = samples.filter(item => item && Number.isFinite(item.mbps)).map(item => item.mbps);
-      return median(fallback);
-    }
-
-    async function measureDirection(direction, sizes) {
-      const samples = [];
-      for (let i = 0; i < sizes.length; i++) {
-        const bytes = sizes[i];
-        const mb = bytesToMb(bytes).toFixed(0);
-        setStatus(`${direction === "download" ? "Midiendo descarga" : "Midiendo subida"} externa con bloque de ${mb} MB...`);
-
-        const result = direction === "download"
-          ? await downloadOnce(bytes)
-          : await uploadOnce(bytes);
-
-        samples.push(result);
-        updateGauge(result.mbps, direction === "download" ? "Descarga" : "Subida");
-
-        // Si la muestra ya duró lo suficiente, no forzamos bloques más grandes.
-        if (result.seconds >= 2.0 && i >= 1) break;
-      }
-      return {
-        mbps: chooseBandwidth(samples),
-        samples
-      };
-    }
-
-    function resetUI() {
-      usedBytes = 0;
-      failedRequests = 0;
-      totalRequests = 0;
-      lastResult = null;
-      updateGauge(0, "Resultado");
-      el.pingResult.textContent = "--";
-      el.jitterResult.textContent = "--";
-      el.downloadResult.textContent = "--";
-      el.uploadResult.textContent = "--";
-      el.lossResult.textContent = "--";
-      el.dataUsedResult.textContent = "--";
-      el.ratingResult.textContent = "Esperando prueba...";
+    function resetUI(){
+      totalDataUsedMb=0;lastResult=null;targetSpeed=0;
+      els.pingResult.textContent='--';els.jitterResult.textContent='--';els.downloadResult.textContent='--';els.uploadResult.textContent='--';els.lossResult.textContent='--';els.dataUsedResult.textContent='--';
+      els.ratingResult.textContent='Esperando prueba';
+      setStatus('Presiona “Iniciar test completo”.');
       resetSteps();
-      setStatus("Presiona “Iniciar test completo” para comenzar.");
+      animateGaugeTo(0,'LISTO',650);
     }
 
-    async function runTest() {
-      resetUI();
-      setBusy(true);
+    async function measurePing(samples){
+      const times=[];let failed=0;
+      for(let i=0;i<samples;i++){
+        const start=performance.now();
+        try{
+          const r=await fetch(`https://speed.cloudflare.com/cdn-cgi/trace?r=${Date.now()}-${i}`,{cache:'no-store'});
+          if(!r.ok) failed++;
+        }catch{failed++}
+        times.push(performance.now()-start);
+        await new Promise(r=>setTimeout(r,115));
+      }
+      const valid=times.filter(Number.isFinite);
+      const avg=valid.reduce((a,b)=>a+b,0)/valid.length;
+      const jitter=valid.slice(1).map((v,i)=>Math.abs(v-valid[i])).reduce((a,b)=>a+b,0)/Math.max(valid.length-1,1);
+      return {average:avg,jitter,loss:(failed/samples)*100};
+    }
 
-      try {
-        const mode = TEST_MODES[el.modeSelect.value] || TEST_MODES.balanced;
-        setStatus(`Iniciando ${mode.name}. Servicio externo: Cloudflare Speed Test.`);
+    async function measureDownload(bytes){
+      const url=`https://speed.cloudflare.com/__down?bytes=${bytes}&r=${Date.now()}`;
+      targetSpeed=0;
+      startLiveGauge('DESCARGA');
+      const start=performance.now();
+      let loaded=0;
+      const response=await fetch(url,{cache:'no-store'});
+      if(!response.ok) throw new Error('No se pudo medir la descarga.');
+      if(!response.body){
+        const blob=await response.blob();
+        loaded=blob.size;
+      }else{
+        const reader=response.body.getReader();
+        while(true){
+          const {done,value}=await reader.read();
+          if(done) break;
+          loaded+=value.length;
+          const elapsed=(performance.now()-start)/1000;
+          if(elapsed>0) targetSpeed=(loaded*8)/elapsed/1000/1000;
+        }
+      }
+      const elapsed=(performance.now()-start)/1000;
+      const speed=(loaded*8)/elapsed/1000/1000;
+      totalDataUsedMb+=loaded/1024/1024;
+      stopLiveGauge(speed,'DESCARGA');
+      return speed;
+    }
 
-        const latency = await measureLatency(mode.latencySamples);
-        el.pingResult.textContent = format(latency.ping, 0);
-        el.jitterResult.textContent = format(latency.jitter, 0);
-        setStep(el.stepPing, true);
+    function randomBlob(sizeBytes){
+      const chunks=[];
+      const chunkSize=65536;
+      let remaining=sizeBytes;
+      while(remaining>0){
+        const size=Math.min(chunkSize,remaining);
+        const arr=new Uint8Array(size);
+        crypto.getRandomValues(arr);
+        chunks.push(arr);
+        remaining-=size;
+      }
+      return new Blob(chunks,{type:'application/octet-stream'});
+    }
 
-        const download = await measureDirection("download", mode.downloadBytes);
-        el.downloadResult.textContent = format(download.mbps, 2);
-        updateGauge(download.mbps, "Descarga");
-        setStep(el.stepDownload, true);
-
-        const upload = await measureDirection("upload", mode.uploadBytes);
-        el.uploadResult.textContent = format(upload.mbps, 2);
-        updateGauge(upload.mbps, "Subida");
-        setStep(el.stepUpload, true);
-
-        const loss = totalRequests > 0 ? (failedRequests / totalRequests) * 100 : 0;
-        const dataUsedMb = bytesToMb(usedBytes);
-        const rating = getRating(download.mbps, upload.mbps, latency.ping);
-
-        el.lossResult.textContent = format(loss, 0);
-        el.dataUsedResult.textContent = format(dataUsedMb, 0);
-        el.ratingResult.textContent = rating;
-
-        lastResult = {
-          date: new Date().toLocaleString("es-CL"),
-          ping: latency.ping,
-          jitter: latency.jitter,
-          download: download.mbps,
-          upload: upload.mbps,
-          loss,
-          dataUsedMb,
-          rating,
-          mode: mode.name
+    function uploadXhr(url,blob){
+      return new Promise((resolve,reject)=>{
+        const xhr=new XMLHttpRequest();
+        xhr.open('POST',url,true);
+        const start=performance.now();
+        xhr.upload.onprogress=e=>{
+          const elapsed=(performance.now()-start)/1000;
+          if(elapsed>0 && e.loaded>0) targetSpeed=(e.loaded*8)/elapsed/1000/1000;
         };
+        xhr.onload=()=>{
+          if(xhr.status>=200 && xhr.status<300){
+            const elapsed=(performance.now()-start)/1000;
+            const speed=(blob.size*8)/elapsed/1000/1000;
+            resolve({speed,bytes:blob.size});
+          }else reject(new Error('No se pudo medir la subida.'));
+        };
+        xhr.onerror=()=>reject(new Error('Error de red durante la subida.'));
+        xhr.send(blob);
+      });
+    }
 
+    async function measureUpload(bytes){
+      const url=`https://speed.cloudflare.com/__up?r=${Date.now()}`;
+      const blob=randomBlob(bytes);
+      targetSpeed=0;
+      startLiveGauge('SUBIDA');
+      const result=await uploadXhr(url,blob);
+      totalDataUsedMb+=result.bytes/1024/1024;
+      stopLiveGauge(result.speed,'SUBIDA');
+      return result.speed;
+    }
+
+    function rating(download,ping){
+      if(download>=300 && ping<=30) return 'Excelente';
+      if(download>=100 && ping<=55) return 'Muy buena';
+      if(download>=40) return 'Buena';
+      if(download>=15) return 'Aceptable';
+      return 'Limitada';
+    }
+
+    function saveHistory(result){
+      const list=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');
+      list.unshift(result);
+      localStorage.setItem(HISTORY_KEY,JSON.stringify(list.slice(0,6)));
+      renderHistory();
+    }
+
+    function renderHistory(){
+      const list=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');
+      if(!list.length){els.historyList.innerHTML='<div class="history-item">Sin resultados guardados</div>';return}
+      els.historyList.innerHTML=list.map(item=>`
+        <div class="history-item">
+          <div><small>${item.date}</small><div>${item.ping} ms ping • ${item.jitter} ms jitter</div></div>
+          <div class="history-score">${item.download} / ${item.upload}</div>
+        </div>`).join('');
+    }
+
+    async function copyResult(){
+      if(!lastResult){setStatus('Primero realiza una prueba.');return}
+      const text=`turbo_net\nFecha: ${lastResult.date}\nPing: ${lastResult.ping} ms\nJitter: ${lastResult.jitter} ms\nDescarga: ${lastResult.download} Mbps\nSubida: ${lastResult.upload} Mbps\nPérdida HTTP: ${lastResult.loss} %\nDatos usados: ${lastResult.dataUsed} MB aprox.\nEvaluación: ${lastResult.rating}`;
+      await navigator.clipboard.writeText(text);
+      setStatus('Resultado copiado.');
+    }
+
+    async function runTest(){
+      resetUI();setBusy(true);
+      try{
+        const config=getModeConfig();
+
+        activateStep(els.stepPing);setStatus('Midiendo latencia...');
+        const ping=await measurePing(config.pingSamples);
+        els.pingResult.textContent=fmt(ping.average,0);
+        els.jitterResult.textContent=fmt(ping.jitter,0);
+        els.lossResult.textContent=fmt(ping.loss,0);
+        setStep(els.stepPing,true);
+
+        activateStep(els.stepDownload);setStatus('Midiendo descarga...');
+        const down=await measureDownload(config.downloadBytes);
+        els.downloadResult.textContent=fmt(down,2);
+        setStep(els.stepDownload,true);
+
+        activateStep(els.stepUpload);setStatus('Midiendo subida...');
+        const up=await measureUpload(config.uploadBytes);
+        els.uploadResult.textContent=fmt(up,2);
+        setStep(els.stepUpload,true);
+
+        els.dataUsedResult.textContent=fmt(totalDataUsedMb,0);
+        const evalText=rating(down,ping.average);
+        els.ratingResult.textContent=evalText;
+        setStep(els.stepSummary,true);
+        setStatus('Prueba finalizada.');
+
+        lastResult={
+          date:new Date().toLocaleString('es-CL'),
+          ping:fmt(ping.average,0),
+          jitter:fmt(ping.jitter,0),
+          download:fmt(down,2),
+          upload:fmt(up,2),
+          loss:fmt(ping.loss,0),
+          dataUsed:fmt(totalDataUsedMb,0),
+          rating:evalText
+        };
         saveHistory(lastResult);
-        renderHistory();
-        setStep(el.stepSummary, true);
-        setStatus(`Test finalizado. ${rating}. Esta medición usa servicios externos, por lo que ya no depende de archivos .bin del repositorio.`);
-      } catch (error) {
-        setStatus(`No se pudo completar la prueba: ${error.message || "error desconocido"}. Revisa conexión, bloqueadores, CORS o VPN.`);
-      } finally {
+      }catch(error){
+        setStatus(error.message||'Ocurrió un error durante la prueba.');
+      }finally{
         setBusy(false);
       }
     }
 
-    async function copyResult() {
-      if (!lastResult) {
-        setStatus("Primero realiza una prueba para copiar el resultado.");
-        return;
-      }
+    els.startBtn.addEventListener('click',runTest);
+    els.copyBtn.addEventListener('click',copyResult);
+    els.resetBtn.addEventListener('click',resetUI);
 
-      const text = `turbo_net - Resultado\nFecha: ${lastResult.date}\nModo: ${lastResult.mode}\nServidor externo: Cloudflare\nPing: ${format(lastResult.ping, 0)} ms\nJitter: ${format(lastResult.jitter, 0)} ms\nDescarga: ${format(lastResult.download, 2)} Mbps\nSubida: ${format(lastResult.upload, 2)} Mbps\nPérdida HTTP: ${format(lastResult.loss, 0)} %\nDatos usados: ${format(lastResult.dataUsedMb, 0)} MB aprox.\nEvaluación: ${lastResult.rating}`;
-
-      try {
-        await navigator.clipboard.writeText(text);
-        setStatus("Resultado copiado al portapapeles.");
-      } catch {
-        setStatus("No se pudo copiar automáticamente. Revisa permisos del navegador.");
-      }
-    }
-
-    function getHistory() {
-      try {
-        return JSON.parse(localStorage.getItem("turbo_net_history_external") || "[]");
-      } catch {
-        return [];
-      }
-    }
-
-    function saveHistory(result) {
-      const history = getHistory();
-      history.unshift(result);
-      localStorage.setItem("turbo_net_history_external", JSON.stringify(history.slice(0, 5)));
-    }
-
-    function renderHistory() {
-      const history = getHistory();
-      if (!history.length) {
-        el.historyList.textContent = "Aún no hay pruebas guardadas.";
-        return;
-      }
-
-      el.historyList.innerHTML = history.map(item => `
-        <div class="history-item">
-          <span>${item.date}</span>
-          <strong>${format(item.download, 0)}↓ / ${format(item.upload, 0)}↑ Mbps</strong>
-        </div>
-      `).join("");
-    }
-
-    function init() {
-      renderHistory();
-      el.serverName.textContent = "Servidor externo: Cloudflare";
-      el.startBtn.addEventListener("click", runTest);
-      el.copyBtn.addEventListener("click", copyResult);
-      el.resetBtn.addEventListener("click", resetUI);
-    }
-
-    init();
+    createTicks();
+    renderHistory();
+    resetUI();
   </script>
 </body>
 </html>
