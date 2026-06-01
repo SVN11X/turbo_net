@@ -4,41 +4,42 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>turbo_net | Test de velocidad</title>
-
+  <meta name="description" content="turbo_net mide ping, jitter, descarga y subida usando servicios externos de Cloudflare." />
   <style>
     :root {
       --bg: #020617;
-      --panel: #0f172a;
-      --panel2: #111827;
-      --border: rgba(148, 163, 184, 0.25);
+      --panel: rgba(15, 23, 42, 0.88);
+      --panel-2: rgba(17, 24, 39, 0.92);
+      --border: rgba(148, 163, 184, 0.24);
       --text: #f8fafc;
       --muted: #94a3b8;
-      --blue: #38bdf8;
-      --blue2: #2563eb;
+      --cyan: #22d3ee;
+      --blue: #2563eb;
       --green: #22c55e;
       --yellow: #facc15;
       --red: #fb7185;
+      --shadow: rgba(0, 0, 0, 0.34);
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     body {
       min-height: 100vh;
-      background:
-        radial-gradient(circle at top left, rgba(6, 182, 212, 0.22), transparent 32%),
-        radial-gradient(circle at top right, rgba(37, 99, 235, 0.22), transparent 38%),
-        var(--bg);
       color: var(--text);
-      padding: 28px;
+      background:
+        radial-gradient(circle at top left, rgba(34, 211, 238, 0.18), transparent 35%),
+        radial-gradient(circle at top right, rgba(37, 99, 235, 0.20), transparent 38%),
+        linear-gradient(135deg, #020617 0%, #07111f 52%, #020617 100%);
+      padding: 24px;
     }
 
     .page {
-      max-width: 1160px;
+      width: min(1180px, 100%);
       margin: 0 auto;
     }
 
@@ -46,7 +47,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 16px;
+      gap: 18px;
       margin-bottom: 24px;
     }
 
@@ -57,127 +58,134 @@
     }
 
     .logo {
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, var(--blue), var(--blue2));
+      width: 52px;
+      height: 52px;
       display: grid;
       place-items: center;
-      font-size: 22px;
-      box-shadow: 0 14px 32px rgba(56, 189, 248, 0.28);
+      border-radius: 16px;
+      background: linear-gradient(145deg, #22d3ee, #2563eb);
+      box-shadow: 0 16px 40px rgba(34, 211, 238, 0.25);
+      font-size: 25px;
     }
 
     h1 {
-      font-size: 2rem;
-      line-height: 1;
-      letter-spacing: -1px;
+      font-size: clamp(2rem, 4vw, 3.1rem);
+      line-height: 0.95;
+      letter-spacing: -2px;
     }
 
     .subtitle {
       color: #bae6fd;
-      font-size: 0.9rem;
-      margin-top: 4px;
+      margin-top: 6px;
+      font-size: 0.98rem;
     }
 
     .server-pill {
       border: 1px solid var(--border);
-      padding: 10px 16px;
-      border-radius: 999px;
       color: #bfdbfe;
-      background: rgba(15, 23, 42, 0.65);
-      font-size: 0.9rem;
+      background: rgba(15, 23, 42, 0.62);
+      padding: 11px 17px;
+      border-radius: 999px;
+      white-space: nowrap;
+      font-size: 0.93rem;
     }
 
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.5fr) minmax(340px, 0.95fr);
+      grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.95fr);
       gap: 18px;
     }
 
     .card {
-      background: rgba(15, 23, 42, 0.84);
+      background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: 28px;
-      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
-      backdrop-filter: blur(12px);
+      border-radius: 30px;
+      box-shadow: 0 28px 80px var(--shadow);
+      backdrop-filter: blur(14px);
     }
 
     .main-card {
+      min-height: 710px;
       padding: 34px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 640px;
       justify-content: center;
+      overflow: hidden;
+    }
+
+    .gauge-wrap {
+      position: relative;
+      width: min(470px, 90vw);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      margin-bottom: 24px;
     }
 
     .gauge {
-      position: relative;
-      width: min(390px, 86vw);
-      aspect-ratio: 1;
+      position: absolute;
+      inset: 0;
       border-radius: 50%;
-      display: grid;
-      place-items: center;
-      margin-bottom: 30px;
       background:
         conic-gradient(from 225deg,
-          var(--blue) 0deg,
-          var(--green) var(--angle),
+          #22d3ee 0deg,
+          #22c55e var(--angle),
           rgba(30, 41, 59, 0.95) var(--angle),
           rgba(30, 41, 59, 0.95) 270deg,
           transparent 270deg,
           transparent 360deg
         );
-      transform: rotate(0deg);
+      filter: drop-shadow(0 20px 50px rgba(34, 211, 238, 0.12));
     }
 
     .gauge::before {
       content: "";
       position: absolute;
-      inset: 34px;
+      inset: 44px;
       border-radius: 50%;
-      background: #020617;
-      box-shadow: inset 0 0 34px rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.16);
+      background: radial-gradient(circle at center, #020617 0%, #030712 70%, #020617 100%);
+      border: 1px solid rgba(148, 163, 184, 0.17);
+      box-shadow: inset 0 0 40px rgba(15, 23, 42, 0.94);
     }
 
-    .gauge-inner {
-      position: relative;
+    .gauge-center {
       z-index: 2;
       text-align: center;
+      max-width: 82%;
     }
 
     .gauge-label {
-      color: #22d3ee;
-      font-weight: 800;
-      font-size: 0.72rem;
-      letter-spacing: 2px;
+      color: var(--cyan);
+      font-size: 0.78rem;
       text-transform: uppercase;
+      letter-spacing: 3px;
+      font-weight: 900;
       margin-bottom: 12px;
     }
 
     .gauge-value {
-      font-size: clamp(3.4rem, 8vw, 5.4rem);
-      font-weight: 900;
-      line-height: 0.95;
-      letter-spacing: -4px;
+      font-size: clamp(3.4rem, 8vw, 6.1rem);
+      font-weight: 950;
+      line-height: 0.92;
+      letter-spacing: -5px;
     }
 
     .gauge-unit {
       color: var(--muted);
-      font-size: 1rem;
-      margin-top: 8px;
+      margin-top: 10px;
+      font-size: 1.08rem;
     }
 
     .scale {
-      width: min(390px, 86vw);
+      width: min(470px, 90vw);
       display: flex;
       justify-content: space-between;
       color: #64748b;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
+      padding: 0 38px;
       margin-top: -18px;
-      margin-bottom: 24px;
-      padding: 0 18px;
+      margin-bottom: 26px;
     }
 
     .controls {
@@ -190,38 +198,39 @@
     }
 
     button,
-    select,
-    input {
+    select {
       border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 14px 18px;
-      font-size: 0.95rem;
       color: var(--text);
       background: rgba(15, 23, 42, 0.78);
+      border-radius: 999px;
+      padding: 15px 19px;
+      font-size: 0.98rem;
       outline: none;
     }
 
     button {
       cursor: pointer;
-      font-weight: 800;
-      transition: transform 0.2s ease, opacity 0.2s ease;
+      font-weight: 850;
+      transition: transform 0.18s ease, opacity 0.18s ease, border-color 0.18s ease;
     }
 
     button:hover {
       transform: translateY(-2px);
+      border-color: rgba(34, 211, 238, 0.48);
     }
 
-    button:disabled {
+    button:disabled,
+    select:disabled {
       opacity: 0.55;
       cursor: not-allowed;
       transform: none;
     }
 
     .primary {
-      background: linear-gradient(135deg, var(--blue), var(--blue2));
       border: none;
-      padding-inline: 26px;
-      box-shadow: 0 14px 30px rgba(56, 189, 248, 0.22);
+      background: linear-gradient(135deg, #22d3ee, #2563eb);
+      box-shadow: 0 16px 34px rgba(37, 99, 235, 0.26);
+      padding-inline: 30px;
     }
 
     .secondary {
@@ -235,83 +244,88 @@
     }
 
     .side-card {
-      padding: 20px;
+      padding: 24px;
     }
 
     .side-card h2 {
-      font-size: 1.02rem;
-      margin-bottom: 16px;
+      font-size: 1.18rem;
+      margin-bottom: 18px;
     }
 
     .results-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      gap: 12px;
     }
 
     .metric {
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 15px;
+      border-radius: 22px;
+      padding: 18px;
+      min-height: 118px;
       background: rgba(15, 23, 42, 0.68);
-      min-height: 98px;
     }
 
     .metric span {
-      color: var(--muted);
-      font-size: 0.78rem;
       display: block;
-      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 12px;
     }
 
     .metric strong {
       display: block;
-      font-size: 1.45rem;
-      font-weight: 900;
+      font-size: 1.75rem;
+      font-weight: 950;
+      letter-spacing: -0.5px;
+      overflow-wrap: anywhere;
     }
 
     .metric small {
-      color: var(--muted);
       display: block;
-      margin-top: 6px;
-      font-size: 0.78rem;
+      color: var(--muted);
+      font-size: 0.83rem;
+      margin-top: 8px;
     }
 
     .rating {
-      margin-top: 12px;
       display: inline-flex;
       max-width: 100%;
-      padding: 9px 14px;
-      border-radius: 999px;
-      background: rgba(34, 197, 94, 0.18);
+      margin-top: 16px;
       color: #dcfce7;
-      font-size: 0.84rem;
-      font-weight: 800;
+      background: rgba(34, 197, 94, 0.18);
+      border: 1px solid rgba(34, 197, 94, 0.14);
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 0.92rem;
+      font-weight: 850;
+      line-height: 1.25;
     }
 
     .status-box {
       background: rgba(14, 165, 233, 0.12);
-      border: 1px solid rgba(56, 189, 248, 0.35);
+      border: 1px solid rgba(34, 211, 238, 0.32);
       color: #e0f2fe;
-      border-radius: 18px;
+      border-radius: 20px;
       padding: 16px;
-      line-height: 1.5;
-      font-size: 0.92rem;
-      margin-bottom: 12px;
+      line-height: 1.48;
+      font-size: 0.96rem;
+      margin-bottom: 16px;
+      min-height: 86px;
     }
 
     .steps {
       list-style: none;
       display: grid;
-      gap: 9px;
+      gap: 10px;
       color: var(--muted);
-      font-size: 0.9rem;
+      font-size: 0.93rem;
     }
 
     .steps li {
       display: flex;
       align-items: center;
-      gap: 9px;
+      gap: 10px;
     }
 
     .dot {
@@ -319,7 +333,8 @@
       height: 14px;
       border-radius: 50%;
       background: #334155;
-      box-shadow: 0 0 0 4px rgba(51, 65, 85, 0.28);
+      box-shadow: 0 0 0 4px rgba(51, 65, 85, 0.24);
+      flex: 0 0 auto;
     }
 
     .dot.done {
@@ -327,224 +342,164 @@
       box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.14);
     }
 
-    .advanced {
+    .note {
       margin-top: 18px;
-      width: 100%;
-      max-width: 700px;
-      border-top: 1px solid var(--border);
-      padding-top: 18px;
-      display: grid;
-      gap: 12px;
+      padding: 15px;
+      background: rgba(250, 204, 21, 0.09);
+      border: 1px solid rgba(250, 204, 21, 0.22);
+      color: #fde68a;
+      border-radius: 18px;
+      font-size: 0.88rem;
+      line-height: 1.45;
     }
 
-    .advanced label {
+    .history {
+      margin-top: 16px;
+      display: grid;
+      gap: 8px;
       color: var(--muted);
       font-size: 0.86rem;
     }
 
-    .advanced input {
-      width: 100%;
-      border-radius: 16px;
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.58);
+      border: 1px solid rgba(148, 163, 184, 0.12);
     }
 
-    .help {
-      color: var(--muted);
-      font-size: 0.82rem;
-      line-height: 1.45;
+    @media (max-width: 980px) {
+      body { padding: 18px; }
+      header { flex-direction: column; align-items: flex-start; }
+      .layout { grid-template-columns: 1fr; }
+      .main-card { min-height: auto; padding: 26px 18px; }
     }
 
-    @media (max-width: 920px) {
-      body {
-        padding: 18px;
-      }
-
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .layout {
-        grid-template-columns: 1fr;
-      }
-
-      .main-card {
-        min-height: auto;
-        padding: 24px 18px;
-      }
-    }
-
-    @media (max-width: 500px) {
-      .results-grid {
-        grid-template-columns: 1fr;
-      }
-
+    @media (max-width: 540px) {
       .controls button,
-      .controls select {
-        width: 100%;
-      }
-
-      h1 {
-        font-size: 1.65rem;
-      }
+      .controls select { width: 100%; }
+      .results-grid { grid-template-columns: 1fr; }
+      .server-pill { width: 100%; text-align: center; }
+      .gauge-value { letter-spacing: -3px; }
+      .scale { padding: 0 20px; }
     }
   </style>
 </head>
-
 <body>
   <div class="page">
     <header>
       <div class="brand">
-        <div class="logo">⚡</div>
+        <div class="logo" aria-hidden="true">⚡</div>
         <div>
           <h1>turbo_net</h1>
-          <p class="subtitle">Medidor de velocidad web: ping, jitter, descarga y subida opcional.</p>
+          <p class="subtitle">Test de velocidad con servicios externos: ping, jitter, descarga y subida.</p>
         </div>
       </div>
-
-      <div class="server-pill" id="serverName">
-        Servidor: GitHub Pages
-      </div>
+      <div class="server-pill" id="serverName">Servidor externo: Cloudflare</div>
     </header>
 
     <main class="layout">
       <section class="card main-card">
-        <div class="gauge" id="gauge" style="--angle: 0deg;">
-          <div class="gauge-inner">
+        <div class="gauge-wrap" aria-label="Velocímetro de velocidad">
+          <div class="gauge" id="gauge" style="--angle: 0deg;"></div>
+          <div class="gauge-center">
             <div class="gauge-label" id="gaugeLabel">Resultado</div>
             <div class="gauge-value" id="gaugeValue">0.00</div>
             <div class="gauge-unit">Mbps</div>
           </div>
         </div>
 
-        <div class="scale">
-          <span>0</span>
-          <span>100</span>
-          <span>250</span>
-          <span>500</span>
-          <span>1000+</span>
+        <div class="scale" aria-hidden="true">
+          <span>0</span><span>100</span><span>250</span><span>500</span><span>1000+</span>
         </div>
 
         <div class="controls">
-          <select id="modeSelect">
-            <option value="auto">Modo automático</option>
-            <option value="10">Descarga 10 MB</option>
-            <option value="50">Descarga 50 MB</option>
-            <option value="100">Descarga 100 MB</option>
+          <select id="modeSelect" aria-label="Modo de prueba">
+            <option value="balanced">Modo recomendado</option>
+            <option value="lite">Modo liviano</option>
+            <option value="intense">Modo intensivo</option>
           </select>
-
           <button class="primary" id="startBtn">Iniciar test completo</button>
           <button class="secondary" id="copyBtn">Copiar resultado</button>
           <button class="secondary" id="resetBtn">Reiniciar</button>
         </div>
 
-        <div class="advanced">
-          <label for="uploadEndpointInput">Servidor de subida opcional</label>
-          <input
-            id="uploadEndpointInput"
-            type="url"
-            placeholder="Ejemplo: https://turbo-net-upload.tuusuario.workers.dev"
-          />
-          <p class="help">
-            Para medir subida real, debes crear un Cloudflare Worker con el código upload-worker.js
-            y pegar aquí su URL. Si lo dejas vacío, la subida aparecerá como “No configurada”.
-          </p>
+        <div class="note">
+          Esta versión no usa archivos .bin ni servidor propio. La medición se realiza contra la red externa de Cloudflare. Los resultados pueden variar según WiFi, congestión, navegador, VPN, horario y distancia al nodo más cercano.
         </div>
       </section>
 
       <aside>
         <section class="card side-card">
           <h2>Resultados</h2>
-
           <div class="results-grid">
-            <div class="metric">
-              <span>Ping</span>
-              <strong id="pingResult">--</strong>
-              <small>ms</small>
-            </div>
-
-            <div class="metric">
-              <span>Jitter</span>
-              <strong id="jitterResult">--</strong>
-              <small>ms</small>
-            </div>
-
-            <div class="metric">
-              <span>Descarga</span>
-              <strong id="downloadResult">--</strong>
-              <small>Mbps</small>
-            </div>
-
-            <div class="metric">
-              <span>Subida</span>
-              <strong id="uploadResult">No config.</strong>
-              <small>Mbps</small>
-            </div>
-
-            <div class="metric">
-              <span>Pérdida HTTP</span>
-              <strong id="lossResult">--</strong>
-              <small>%</small>
-            </div>
-
-            <div class="metric">
-              <span>Datos usados</span>
-              <strong id="dataUsedResult">--</strong>
-              <small>MB aprox.</small>
-            </div>
+            <div class="metric"><span>Ping</span><strong id="pingResult">--</strong><small>ms</small></div>
+            <div class="metric"><span>Jitter</span><strong id="jitterResult">--</strong><small>ms</small></div>
+            <div class="metric"><span>Descarga</span><strong id="downloadResult">--</strong><small>Mbps</small></div>
+            <div class="metric"><span>Subida</span><strong id="uploadResult">--</strong><small>Mbps</small></div>
+            <div class="metric"><span>Pérdida HTTP</span><strong id="lossResult">--</strong><small>%</small></div>
+            <div class="metric"><span>Datos usados</span><strong id="dataUsedResult">--</strong><small>MB aprox.</small></div>
           </div>
-
           <div class="rating" id="ratingResult">Esperando prueba...</div>
         </section>
 
         <section class="card side-card">
           <h2>Estado de la prueba</h2>
-
-          <div class="status-box" id="statusBox">
-            Presiona “Iniciar test completo” para comenzar.
-          </div>
-
+          <div class="status-box" id="statusBox">Presiona “Iniciar test completo” para comenzar.</div>
           <ul class="steps">
             <li><span class="dot" id="stepPing"></span> Latencia y estabilidad</li>
-            <li><span class="dot" id="stepDownload"></span> Descarga multi-conexión</li>
-            <li><span class="dot" id="stepUpload"></span> Subida opcional</li>
+            <li><span class="dot" id="stepDownload"></span> Descarga externa</li>
+            <li><span class="dot" id="stepUpload"></span> Subida externa</li>
             <li><span class="dot" id="stepSummary"></span> Resumen final</li>
           </ul>
+        </section>
+
+        <section class="card side-card">
+          <h2>Historial local</h2>
+          <div class="history" id="historyList">Aún no hay pruebas guardadas.</div>
         </section>
       </aside>
     </main>
   </div>
 
   <script>
-    /*
-      IMPORTANTE:
-      GitHub Pages no puede medir subida real por sí solo.
-      Para activar subida:
-      1. Crea un Cloudflare Worker con el código upload-worker.js.
-      2. Copia la URL del Worker.
-      3. Pégala en el campo “Servidor de subida opcional”.
-      
-      También puedes dejar una URL fija aquí:
-      const DEFAULT_UPLOAD_ENDPOINT = "https://turbo-net-upload.tuusuario.workers.dev";
-    */
+    const ENDPOINT = "https://speed.cloudflare.com";
+    const DOWNLOAD_URL = `${ENDPOINT}/__down`;
+    const UPLOAD_URL = `${ENDPOINT}/__up`;
 
-    const DEFAULT_UPLOAD_ENDPOINT = "";
-
-    const TEST_FILES = {
-      10: { url: "speedtest_10mb.bin", sizeMb: 10 },
-      50: { url: "speedtest_50mb.bin", sizeMb: 50 },
-      100: { url: "speedtest_100mb.bin", sizeMb: 100 }
+    const TEST_MODES = {
+      lite: {
+        name: "Modo liviano",
+        latencySamples: 6,
+        downloadBytes: [1_000_000, 5_000_000, 10_000_000],
+        uploadBytes: [1_000_000, 5_000_000]
+      },
+      balanced: {
+        name: "Modo recomendado",
+        latencySamples: 9,
+        downloadBytes: [1_000_000, 5_000_000, 25_000_000, 50_000_000],
+        uploadBytes: [1_000_000, 5_000_000, 10_000_000, 25_000_000]
+      },
+      intense: {
+        name: "Modo intensivo",
+        latencySamples: 12,
+        downloadBytes: [5_000_000, 25_000_000, 50_000_000, 100_000_000],
+        uploadBytes: [5_000_000, 10_000_000, 25_000_000, 50_000_000]
+      }
     };
 
-    const elements = {
+    const el = {
       gauge: document.getElementById("gauge"),
       gaugeLabel: document.getElementById("gaugeLabel"),
       gaugeValue: document.getElementById("gaugeValue"),
-      serverName: document.getElementById("serverName"),
       modeSelect: document.getElementById("modeSelect"),
       startBtn: document.getElementById("startBtn"),
       copyBtn: document.getElementById("copyBtn"),
       resetBtn: document.getElementById("resetBtn"),
-      uploadEndpointInput: document.getElementById("uploadEndpointInput"),
+      serverName: document.getElementById("serverName"),
       pingResult: document.getElementById("pingResult"),
       jitterResult: document.getElementById("jitterResult"),
       downloadResult: document.getElementById("downloadResult"),
@@ -553,6 +508,7 @@
       dataUsedResult: document.getElementById("dataUsedResult"),
       ratingResult: document.getElementById("ratingResult"),
       statusBox: document.getElementById("statusBox"),
+      historyList: document.getElementById("historyList"),
       stepPing: document.getElementById("stepPing"),
       stepDownload: document.getElementById("stepDownload"),
       stepUpload: document.getElementById("stepUpload"),
@@ -560,251 +516,226 @@
     };
 
     let lastResult = null;
-    let totalDataUsed = 0;
+    let usedBytes = 0;
+    let failedRequests = 0;
+    let totalRequests = 0;
 
-    function init() {
-      const savedEndpoint = localStorage.getItem("turbo_net_upload_endpoint") || DEFAULT_UPLOAD_ENDPOINT;
-      elements.uploadEndpointInput.value = savedEndpoint;
-
-      try {
-        elements.serverName.textContent = `Servidor: ${location.hostname || "local"}`;
-      } catch {
-        elements.serverName.textContent = "Servidor: GitHub Pages";
-      }
+    function uniqueId() {
+      return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     }
 
-    function setBusy(isBusy) {
-      elements.startBtn.disabled = isBusy;
-      elements.modeSelect.disabled = isBusy;
-      elements.uploadEndpointInput.disabled = isBusy;
+    function format(value, decimals = 2) {
+      return Number.isFinite(value) ? value.toFixed(decimals) : "--";
+    }
+
+    function bytesToMb(bytes) {
+      return bytes / 1_000_000;
     }
 
     function setStatus(message) {
-      elements.statusBox.textContent = message;
+      el.statusBox.textContent = message;
     }
 
-    function setStep(step, done) {
-      step.classList.toggle("done", done);
+    function setBusy(busy) {
+      el.startBtn.disabled = busy;
+      el.modeSelect.disabled = busy;
+    }
+
+    function setStep(node, done) {
+      node.classList.toggle("done", done);
     }
 
     function resetSteps() {
-      setStep(elements.stepPing, false);
-      setStep(elements.stepDownload, false);
-      setStep(elements.stepUpload, false);
-      setStep(elements.stepSummary, false);
+      [el.stepPing, el.stepDownload, el.stepUpload, el.stepSummary].forEach(node => setStep(node, false));
+    }
+
+    function updateGauge(mbps, label) {
+      const value = Number.isFinite(mbps) ? Math.max(0, mbps) : 0;
+      const max = 1000;
+      const angle = Math.min(value / max, 1) * 270;
+      el.gauge.style.setProperty("--angle", `${angle}deg`);
+      el.gaugeValue.textContent = value.toFixed(2);
+      el.gaugeLabel.textContent = label;
+    }
+
+    function percentile(values, p) {
+      const arr = values.filter(Number.isFinite).sort((a, b) => a - b);
+      if (!arr.length) return NaN;
+      const index = Math.min(arr.length - 1, Math.max(0, Math.floor((arr.length - 1) * p)));
+      return arr[index];
+    }
+
+    function median(values) {
+      return percentile(values, 0.5);
+    }
+
+    function calculateJitter(times) {
+      const arr = times.filter(Number.isFinite);
+      if (arr.length < 2) return 0;
+      const diffs = arr.slice(1).map((value, index) => Math.abs(value - arr[index]));
+      return diffs.reduce((sum, value) => sum + value, 0) / diffs.length;
+    }
+
+    function getRating(download, upload, ping) {
+      if (!Number.isFinite(download) || !Number.isFinite(upload)) return "No se pudo evaluar la conexión.";
+      if (download >= 500 && upload >= 100 && ping <= 35) return "Excelente para streaming, juegos, clases y trabajo intensivo";
+      if (download >= 150 && upload >= 30 && ping <= 60) return "Muy buena para streaming, videollamadas y trabajo diario";
+      if (download >= 50 && upload >= 10) return "Buena para navegación, clases y videollamadas";
+      if (download >= 15 && upload >= 3) return "Aceptable para uso básico";
+      return "Limitada: puede presentar problemas en videollamadas o streaming";
+    }
+
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        totalRequests += 1;
+        const response = await fetch(url, {
+          ...options,
+          cache: "no-store",
+          signal: controller.signal
+        });
+        if (!response.ok) {
+          failedRequests += 1;
+          throw new Error(`Respuesta HTTP ${response.status}`);
+        }
+        return response;
+      } catch (error) {
+        failedRequests += 1;
+        throw error;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    async function measureLatency(samples) {
+      const times = [];
+      for (let i = 0; i < samples; i++) {
+        const url = `${DOWNLOAD_URL}?bytes=0&measId=${uniqueId()}&r=${i}`;
+        const start = performance.now();
+        try {
+          const response = await fetchWithTimeout(url, { method: "GET" }, 8000);
+          await response.arrayBuffer();
+          times.push(performance.now() - start);
+        } catch {
+          // La pérdida HTTP se contabiliza en fetchWithTimeout.
+        }
+        await new Promise(resolve => setTimeout(resolve, 120));
+      }
+      return {
+        ping: median(times),
+        jitter: calculateJitter(times),
+        points: times
+      };
+    }
+
+    async function readResponseBody(response) {
+      if (!response.body) {
+        await response.arrayBuffer();
+        return;
+      }
+
+      const reader = response.body.getReader();
+      while (true) {
+        const { done } = await reader.read();
+        if (done) break;
+      }
+    }
+
+    async function downloadOnce(bytes) {
+      const url = `${DOWNLOAD_URL}?bytes=${bytes}&measId=${uniqueId()}`;
+      const start = performance.now();
+      const response = await fetchWithTimeout(url, { method: "GET" }, 60000);
+      await readResponseBody(response);
+      const seconds = (performance.now() - start) / 1000;
+      usedBytes += bytes;
+      return {
+        bytes,
+        seconds,
+        mbps: (bytes * 8) / seconds / 1_000_000
+      };
+    }
+
+    function makeUploadData(bytes) {
+      const data = new Uint8Array(bytes);
+      // Relleno por bloques para evitar límites de crypto.getRandomValues.
+      const blockSize = 65536;
+      for (let offset = 0; offset < data.length; offset += blockSize) {
+        const block = data.subarray(offset, Math.min(offset + blockSize, data.length));
+        crypto.getRandomValues(block);
+      }
+      return data;
+    }
+
+    async function uploadOnce(bytes) {
+      const url = `${UPLOAD_URL}?measId=${uniqueId()}`;
+      const data = makeUploadData(bytes);
+      const start = performance.now();
+      await fetchWithTimeout(url, {
+        method: "POST",
+        body: data
+      }, 60000);
+      const seconds = (performance.now() - start) / 1000;
+      usedBytes += bytes;
+      return {
+        bytes,
+        seconds,
+        mbps: (bytes * 8) / seconds / 1_000_000
+      };
+    }
+
+    function chooseBandwidth(samples) {
+      const valid = samples
+        .filter(item => item && Number.isFinite(item.mbps) && item.seconds >= 0.35)
+        .map(item => item.mbps);
+
+      if (valid.length) {
+        // Usamos mediana para evitar resultados inflados por muestras demasiado rápidas.
+        return median(valid);
+      }
+
+      const fallback = samples.filter(item => item && Number.isFinite(item.mbps)).map(item => item.mbps);
+      return median(fallback);
+    }
+
+    async function measureDirection(direction, sizes) {
+      const samples = [];
+      for (let i = 0; i < sizes.length; i++) {
+        const bytes = sizes[i];
+        const mb = bytesToMb(bytes).toFixed(0);
+        setStatus(`${direction === "download" ? "Midiendo descarga" : "Midiendo subida"} externa con bloque de ${mb} MB...`);
+
+        const result = direction === "download"
+          ? await downloadOnce(bytes)
+          : await uploadOnce(bytes);
+
+        samples.push(result);
+        updateGauge(result.mbps, direction === "download" ? "Descarga" : "Subida");
+
+        // Si la muestra ya duró lo suficiente, no forzamos bloques más grandes.
+        if (result.seconds >= 2.0 && i >= 1) break;
+      }
+      return {
+        mbps: chooseBandwidth(samples),
+        samples
+      };
     }
 
     function resetUI() {
-      elements.gaugeValue.textContent = "0.00";
-      elements.gaugeLabel.textContent = "Resultado";
-      elements.gauge.style.setProperty("--angle", "0deg");
-
-      elements.pingResult.textContent = "--";
-      elements.jitterResult.textContent = "--";
-      elements.downloadResult.textContent = "--";
-      elements.uploadResult.textContent = "No config.";
-      elements.lossResult.textContent = "--";
-      elements.dataUsedResult.textContent = "--";
-      elements.ratingResult.textContent = "Esperando prueba...";
-
-      totalDataUsed = 0;
+      usedBytes = 0;
+      failedRequests = 0;
+      totalRequests = 0;
       lastResult = null;
+      updateGauge(0, "Resultado");
+      el.pingResult.textContent = "--";
+      el.jitterResult.textContent = "--";
+      el.downloadResult.textContent = "--";
+      el.uploadResult.textContent = "--";
+      el.lossResult.textContent = "--";
+      el.dataUsedResult.textContent = "--";
+      el.ratingResult.textContent = "Esperando prueba...";
       resetSteps();
-
       setStatus("Presiona “Iniciar test completo” para comenzar.");
-    }
-
-    function updateGauge(speed, label = "Resultado") {
-      const safeSpeed = Number.isFinite(speed) ? Math.max(0, speed) : 0;
-      const maxSpeed = 1000;
-      const ratio = Math.min(safeSpeed / maxSpeed, 1);
-      const angle = ratio * 270;
-
-      elements.gauge.style.setProperty("--angle", `${angle}deg`);
-      elements.gaugeValue.textContent = safeSpeed.toFixed(2);
-      elements.gaugeLabel.textContent = label;
-    }
-
-    function formatNumber(value, decimals = 2) {
-      if (!Number.isFinite(value)) return "--";
-      return value.toFixed(decimals);
-    }
-
-    function getRating(downloadMbps, pingMs, uploadMbps) {
-      if (!Number.isFinite(downloadMbps)) {
-        return "No se pudo calcular el rendimiento.";
-      }
-
-      if (downloadMbps >= 500 && pingMs <= 30) {
-        return "Excelente para streaming, juegos y trabajo intensivo";
-      }
-
-      if (downloadMbps >= 100 && pingMs <= 60) {
-        return "Muy buena conexión para uso diario y streaming";
-      }
-
-      if (downloadMbps >= 40) {
-        return "Buena conexión para navegación, clases y videollamadas";
-      }
-
-      if (downloadMbps >= 15) {
-        return "Conexión aceptable para uso básico";
-      }
-
-      return "Conexión limitada: puede fallar en streaming o videollamadas";
-    }
-
-    async function measurePing(samples = 8) {
-      const times = [];
-      let failed = 0;
-
-      for (let i = 0; i < samples; i++) {
-        const started = performance.now();
-
-        try {
-          const response = await fetch(`./index.html?ping=${Date.now()}-${i}`, {
-            method: "GET",
-            cache: "no-store"
-          });
-
-          if (!response.ok) failed++;
-        } catch {
-          failed++;
-        }
-
-        const ended = performance.now();
-        times.push(ended - started);
-
-        await new Promise(resolve => setTimeout(resolve, 120));
-      }
-
-      const successfulTimes = times.filter(Number.isFinite);
-
-      const average =
-        successfulTimes.reduce((sum, value) => sum + value, 0) / successfulTimes.length;
-
-      const jitter =
-        successfulTimes.slice(1)
-          .map((value, index) => Math.abs(value - successfulTimes[index]))
-          .reduce((sum, value) => sum + value, 0) / Math.max(successfulTimes.length - 1, 1);
-
-      const loss = (failed / samples) * 100;
-
-      return { average, jitter, loss };
-    }
-
-    function selectDownloadFile() {
-      const mode = elements.modeSelect.value;
-
-      if (mode !== "auto") {
-        return TEST_FILES[mode];
-      }
-
-      /*
-        Modo automático:
-        usa 50 MB como equilibrio.
-        100 MB puede ser más estable en conexiones rápidas,
-        pero consume más ancho de banda.
-      */
-      return TEST_FILES[50];
-    }
-
-    async function measureDownload() {
-      const file = selectDownloadFile();
-
-      totalDataUsed += file.sizeMb;
-
-      const cacheBreaker = Date.now() + "-" + Math.random().toString(16).slice(2);
-      const urls = [
-        `${file.url}?nocache=${cacheBreaker}-1`,
-        `${file.url}?nocache=${cacheBreaker}-2`
-      ];
-
-      setStatus(`Midiendo descarga con ${file.sizeMb} MB en modo multi-conexión...`);
-
-      const started = performance.now();
-
-      const downloads = urls.map(async url => {
-        const response = await fetch(url, { cache: "no-store" });
-
-        if (!response.ok) {
-          throw new Error(`No se encontró ${file.url}. Verifica que el archivo esté subido al repositorio.`);
-        }
-
-        await response.blob();
-      });
-
-      await Promise.all(downloads);
-
-      const ended = performance.now();
-      const seconds = (ended - started) / 1000;
-
-      /*
-        Como se descargan 2 conexiones al mismo tiempo,
-        los datos usados son file.sizeMb * 2.
-      */
-      const downloadedMb = file.sizeMb * 2;
-      totalDataUsed += file.sizeMb;
-
-      const speedMbps = (downloadedMb * 8) / seconds;
-
-      return speedMbps;
-    }
-
-    function getUploadEndpoint() {
-      const endpoint = elements.uploadEndpointInput.value.trim();
-
-      if (endpoint) {
-        localStorage.setItem("turbo_net_upload_endpoint", endpoint);
-      } else {
-        localStorage.removeItem("turbo_net_upload_endpoint");
-      }
-
-      return endpoint;
-    }
-
-    async function measureUpload() {
-      const endpoint = getUploadEndpoint();
-
-      if (!endpoint) {
-        return null;
-      }
-
-      setStatus("Midiendo velocidad de subida...");
-
-      /*
-        Tamaño de subida:
-        8 MB es suficiente para una medición básica
-        sin consumir demasiado tráfico.
-      */
-      const uploadSizeMb = 8;
-      const uploadSizeBytes = uploadSizeMb * 1024 * 1024;
-      const data = new Uint8Array(uploadSizeBytes);
-
-      crypto.getRandomValues(data);
-
-      const started = performance.now();
-
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/octet-stream"
-        },
-        body: data
-      });
-
-      if (!response.ok) {
-        throw new Error("El servidor de subida respondió con error. Revisa la URL del Worker.");
-      }
-
-      const ended = performance.now();
-      const seconds = (ended - started) / 1000;
-
-      totalDataUsed += uploadSizeMb;
-
-      const speedMbps = (uploadSizeMb * 8) / seconds;
-
-      return speedMbps;
     }
 
     async function runTest() {
@@ -812,68 +743,50 @@
       setBusy(true);
 
       try {
-        setStatus("Midiendo latencia, jitter y estabilidad...");
-        const ping = await measurePing();
+        const mode = TEST_MODES[el.modeSelect.value] || TEST_MODES.balanced;
+        setStatus(`Iniciando ${mode.name}. Servicio externo: Cloudflare Speed Test.`);
 
-        elements.pingResult.textContent = formatNumber(ping.average, 0);
-        elements.jitterResult.textContent = formatNumber(ping.jitter, 0);
-        elements.lossResult.textContent = formatNumber(ping.loss, 0);
+        const latency = await measureLatency(mode.latencySamples);
+        el.pingResult.textContent = format(latency.ping, 0);
+        el.jitterResult.textContent = format(latency.jitter, 0);
+        setStep(el.stepPing, true);
 
-        setStep(elements.stepPing, true);
+        const download = await measureDirection("download", mode.downloadBytes);
+        el.downloadResult.textContent = format(download.mbps, 2);
+        updateGauge(download.mbps, "Descarga");
+        setStep(el.stepDownload, true);
 
-        const downloadMbps = await measureDownload();
-        elements.downloadResult.textContent = formatNumber(downloadMbps, 2);
-        updateGauge(downloadMbps, "Descarga");
-        setStep(elements.stepDownload, true);
+        const upload = await measureDirection("upload", mode.uploadBytes);
+        el.uploadResult.textContent = format(upload.mbps, 2);
+        updateGauge(upload.mbps, "Subida");
+        setStep(el.stepUpload, true);
 
-        let uploadMbps = null;
+        const loss = totalRequests > 0 ? (failedRequests / totalRequests) * 100 : 0;
+        const dataUsedMb = bytesToMb(usedBytes);
+        const rating = getRating(download.mbps, upload.mbps, latency.ping);
 
-        try {
-          uploadMbps = await measureUpload();
-
-          if (uploadMbps === null) {
-            elements.uploadResult.textContent = "No config.";
-            setStatus("La descarga finalizó. La subida no se midió porque no hay servidor configurado.");
-          } else {
-            elements.uploadResult.textContent = formatNumber(uploadMbps, 2);
-          }
-        } catch (uploadError) {
-          elements.uploadResult.textContent = "Error";
-          setStatus(uploadError.message);
-        }
-
-        setStep(elements.stepUpload, true);
-
-        elements.dataUsedResult.textContent = formatNumber(totalDataUsed, 0);
-
-        const rating = getRating(downloadMbps, ping.average, uploadMbps);
-        elements.ratingResult.textContent = rating;
+        el.lossResult.textContent = format(loss, 0);
+        el.dataUsedResult.textContent = format(dataUsedMb, 0);
+        el.ratingResult.textContent = rating;
 
         lastResult = {
-          ping: ping.average,
-          jitter: ping.jitter,
-          loss: ping.loss,
-          download: downloadMbps,
-          upload: uploadMbps,
-          dataUsed: totalDataUsed,
+          date: new Date().toLocaleString("es-CL"),
+          ping: latency.ping,
+          jitter: latency.jitter,
+          download: download.mbps,
+          upload: upload.mbps,
+          loss,
+          dataUsedMb,
           rating,
-          date: new Date().toLocaleString("es-CL")
+          mode: mode.name
         };
 
-        setStep(elements.stepSummary, true);
-
-        if (uploadMbps === null) {
-          setStatus(
-            `Test finalizado. ${rating}. La subida aparece como “No config.” porque falta pegar la URL del Cloudflare Worker.`
-          );
-        } else {
-          setStatus(
-            `Test finalizado. ${rating}. Recuerda que el resultado puede variar según WiFi, congestión de red, servidor y equipo usado.`
-          );
-        }
-
+        saveHistory(lastResult);
+        renderHistory();
+        setStep(el.stepSummary, true);
+        setStatus(`Test finalizado. ${rating}. Esta medición usa servicios externos, por lo que ya no depende de archivos .bin del repositorio.`);
       } catch (error) {
-        setStatus(error.message || "Ocurrió un error durante la prueba.");
+        setStatus(`No se pudo completar la prueba: ${error.message || "error desconocido"}. Revisa conexión, bloqueadores, CORS o VPN.`);
       } finally {
         setBusy(false);
       }
@@ -881,31 +794,56 @@
 
     async function copyResult() {
       if (!lastResult) {
-        await navigator.clipboard.writeText("Aún no hay resultados de turbo_net.");
         setStatus("Primero realiza una prueba para copiar el resultado.");
         return;
       }
 
-      const text = `
-turbo_net - Resultado de velocidad
+      const text = `turbo_net - Resultado\nFecha: ${lastResult.date}\nModo: ${lastResult.mode}\nServidor externo: Cloudflare\nPing: ${format(lastResult.ping, 0)} ms\nJitter: ${format(lastResult.jitter, 0)} ms\nDescarga: ${format(lastResult.download, 2)} Mbps\nSubida: ${format(lastResult.upload, 2)} Mbps\nPérdida HTTP: ${format(lastResult.loss, 0)} %\nDatos usados: ${format(lastResult.dataUsedMb, 0)} MB aprox.\nEvaluación: ${lastResult.rating}`;
 
-Fecha: ${lastResult.date}
-Ping: ${formatNumber(lastResult.ping, 0)} ms
-Jitter: ${formatNumber(lastResult.jitter, 0)} ms
-Descarga: ${formatNumber(lastResult.download, 2)} Mbps
-Subida: ${lastResult.upload === null ? "No configurada" : formatNumber(lastResult.upload, 2) + " Mbps"}
-Pérdida HTTP: ${formatNumber(lastResult.loss, 0)} %
-Datos usados: ${formatNumber(lastResult.dataUsed, 0)} MB aprox.
-Evaluación: ${lastResult.rating}
-      `.trim();
-
-      await navigator.clipboard.writeText(text);
-      setStatus("Resultado copiado al portapapeles.");
+      try {
+        await navigator.clipboard.writeText(text);
+        setStatus("Resultado copiado al portapapeles.");
+      } catch {
+        setStatus("No se pudo copiar automáticamente. Revisa permisos del navegador.");
+      }
     }
 
-    elements.startBtn.addEventListener("click", runTest);
-    elements.resetBtn.addEventListener("click", resetUI);
-    elements.copyBtn.addEventListener("click", copyResult);
+    function getHistory() {
+      try {
+        return JSON.parse(localStorage.getItem("turbo_net_history_external") || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function saveHistory(result) {
+      const history = getHistory();
+      history.unshift(result);
+      localStorage.setItem("turbo_net_history_external", JSON.stringify(history.slice(0, 5)));
+    }
+
+    function renderHistory() {
+      const history = getHistory();
+      if (!history.length) {
+        el.historyList.textContent = "Aún no hay pruebas guardadas.";
+        return;
+      }
+
+      el.historyList.innerHTML = history.map(item => `
+        <div class="history-item">
+          <span>${item.date}</span>
+          <strong>${format(item.download, 0)}↓ / ${format(item.upload, 0)}↑ Mbps</strong>
+        </div>
+      `).join("");
+    }
+
+    function init() {
+      renderHistory();
+      el.serverName.textContent = "Servidor externo: Cloudflare";
+      el.startBtn.addEventListener("click", runTest);
+      el.copyBtn.addEventListener("click", copyResult);
+      el.resetBtn.addEventListener("click", resetUI);
+    }
 
     init();
   </script>
