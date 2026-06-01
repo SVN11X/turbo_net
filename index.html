@@ -7,22 +7,17 @@
   <style>
     :root{
       --bg:#020817;
-      --panel:#08142b;
-      --panel-soft:#0d1c38;
-      --panel-glass:rgba(8,20,43,.82);
-      --border:rgba(159,181,224,.20);
+      --panel:rgba(8,20,43,.88);
+      --panel-2:rgba(12,28,56,.82);
+      --border:rgba(157,181,224,.22);
       --text:#f8fbff;
-      --muted:#8fa4c7;
-      --muted2:#61789e;
+      --muted:#95a9c9;
       --cyan:#25d9ff;
       --blue:#2f7dff;
       --green:#23d16f;
-      --yellow:#ffd166;
       --red:#ff5c7c;
-      --shadow:0 28px 90px rgba(0,0,0,.32);
+      --shadow:0 30px 90px rgba(0,0,0,.34);
       --radius:30px;
-      --needle-angle:-135deg;
-      --arc-angle:0deg;
     }
 
     *{box-sizing:border-box;margin:0;padding:0}
@@ -30,16 +25,15 @@
     body{
       min-height:100vh;
       color:var(--text);
+      font-family:Inter,Segoe UI,Arial,Helvetica,sans-serif;
       background:
         radial-gradient(circle at 8% 8%, rgba(37,217,255,.18), transparent 30%),
-        radial-gradient(circle at 92% 5%, rgba(47,125,255,.18), transparent 34%),
-        radial-gradient(circle at 50% 115%, rgba(35,209,111,.08), transparent 35%),
+        radial-gradient(circle at 90% 0%, rgba(47,125,255,.22), transparent 36%),
         linear-gradient(180deg,#06142c 0%,#020817 100%);
-      font-family:Inter,Segoe UI,Arial,Helvetica,sans-serif;
       padding:32px;
     }
 
-    .page{max-width:1420px;margin:0 auto}
+    .page{max-width:1400px;margin:0 auto}
 
     header{
       display:flex;
@@ -52,8 +46,12 @@
     .brand{display:flex;align-items:center;gap:16px}
 
     .logo{
-      width:52px;height:52px;border-radius:17px;
-      display:grid;place-items:center;font-size:25px;
+      width:52px;
+      height:52px;
+      border-radius:17px;
+      display:grid;
+      place-items:center;
+      font-size:25px;
       background:linear-gradient(135deg,var(--cyan),var(--blue));
       box-shadow:0 16px 34px rgba(37,217,255,.25);
     }
@@ -78,13 +76,13 @@
 
     .layout{
       display:grid;
-      grid-template-columns:minmax(0,1.65fr) minmax(370px,.92fr);
+      grid-template-columns:minmax(0,1.62fr) minmax(370px,.92fr);
       gap:20px;
       align-items:start;
     }
 
     .card{
-      background:var(--panel-glass);
+      background:var(--panel);
       border:1px solid var(--border);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
@@ -92,7 +90,7 @@
     }
 
     .main-card{
-      min-height:840px;
+      min-height:790px;
       padding:34px;
       display:flex;
       flex-direction:column;
@@ -108,120 +106,79 @@
       flex-direction:column;
     }
 
-    .gauge{
-      width:min(590px,88vw);
-      aspect-ratio:1/1;
+    .gauge-box{
       position:relative;
+      width:min(640px,88vw);
+      aspect-ratio:1.42/1;
       display:grid;
       place-items:center;
-      border-radius:50%;
-      background:
-        conic-gradient(
-          from 225deg,
-          #26d9ff 0deg,
-          #30e4c9 calc(var(--arc-angle) * .58),
-          #23d16f var(--arc-angle),
-          rgba(45,60,92,.70) var(--arc-angle),
-          rgba(45,60,92,.70) 270deg,
-          transparent 270deg,
-          transparent 360deg
-        );
+    }
+
+    .gauge-svg{
+      width:100%;
+      height:100%;
+      overflow:visible;
       filter:drop-shadow(0 0 24px rgba(37,217,255,.10));
     }
 
-    .gauge::before{
-      content:"";
-      position:absolute;
-      inset:42px;
-      border-radius:50%;
-      background:
-        radial-gradient(circle at 50% 35%,rgba(38,217,255,.10),transparent 44%),
-        radial-gradient(circle at 50% 70%,rgba(47,125,255,.10),transparent 52%),
-        #020817;
-      box-shadow:
-        inset 0 0 55px rgba(0,0,0,.55),
-        inset 0 0 0 1px rgba(159,181,224,.12);
-      z-index:1;
+    .arc-bg{
+      fill:none;
+      stroke:rgba(60,78,112,.72);
+      stroke-width:38;
+      stroke-linecap:butt;
     }
 
-    .gauge::after{
-      content:"";
-      position:absolute;
-      inset:23px;
-      border-radius:50%;
-      border:1px solid rgba(159,181,224,.10);
-      z-index:0;
+    .arc-active{
+      fill:none;
+      stroke:url(#arcGradient);
+      stroke-width:38;
+      stroke-linecap:round;
+      transition:d .12s linear;
     }
 
-    .tick-ring{
-      position:absolute;
-      inset:18px;
-      border-radius:50%;
-      z-index:2;
-      pointer-events:none;
+    .inner-ring{
+      fill:#020817;
+      stroke:rgba(157,181,224,.12);
+      stroke-width:1.2;
+      filter:url(#innerShadow);
     }
 
-    .tick{
-      position:absolute;
-      left:50%;top:50%;
-      width:2px;height:18px;
-      background:rgba(190,210,245,.32);
-      transform-origin:center -245px;
-      border-radius:999px;
-      opacity:.75;
+    .tick-line{
+      stroke:rgba(190,210,245,.32);
+      stroke-width:2;
+      stroke-linecap:round;
     }
 
-    .tick.major{height:28px;width:3px;background:rgba(231,240,255,.58)}
-
-    .needle-wrap{
-      position:absolute;
-      width:10px;
-      height:44%;
-      left:50%;
-      top:10%;
-      transform-origin:50% 91%;
-      transform:translateX(-50%) rotate(var(--needle-angle));
-      transition:transform .14s linear;
-      z-index:5;
-      pointer-events:none;
+    .tick-line.major{
+      stroke:rgba(230,241,255,.62);
+      stroke-width:3;
     }
 
-    .needle{
-      position:absolute;
-      left:50%;bottom:0;
-      width:6px;height:100%;
-      transform:translateX(-50%);
-      border-radius:999px 999px 12px 12px;
-      background:linear-gradient(180deg,#ffffff 0%,#27dfff 42%,#2f7dff 100%);
-      box-shadow:0 0 22px rgba(37,217,255,.52);
+    .needle-line{
+      stroke:url(#needleGradient);
+      stroke-width:6;
+      stroke-linecap:round;
+      filter:url(#glow);
+      transition:x2 .10s linear, y2 .10s linear;
     }
 
-    .needle::before{
-      content:"";
-      position:absolute;
-      top:-9px;left:50%;
-      transform:translateX(-50%);
-      width:16px;height:16px;
-      border-radius:50%;
-      background:#fff;
-      box-shadow:0 0 18px rgba(255,255,255,.45);
+    .needle-tip{
+      fill:#fff;
+      filter:url(#glowSoft);
     }
 
-    .center-cap{
-      position:absolute;
-      width:62px;height:62px;
-      border-radius:50%;
-      background:linear-gradient(135deg,#f8fbff,#8acbff 55%,#2f7dff);
-      box-shadow:0 0 25px rgba(37,217,255,.26), inset 0 0 0 8px rgba(2,8,23,.78);
-      z-index:7;
-    }
+    .center-cap-outer{fill:rgba(2,8,23,.92)}
+    .center-cap-inner{fill:url(#capGradient)}
 
     .gauge-readout{
-      position:relative;
-      z-index:4;
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-21%);
+      width:74%;
       text-align:center;
-      transform:translateY(78px);
-      width:78%;
+      z-index:5;
+      pointer-events:none;
     }
 
     .gauge-label{
@@ -234,23 +191,23 @@
     }
 
     .gauge-value{
-      font-size:clamp(4.3rem,8.2vw,7.6rem);
+      font-size:clamp(4.4rem,8.2vw,7.4rem);
       font-weight:950;
-      line-height:.92;
+      line-height:.9;
       letter-spacing:-5px;
-      text-shadow:0 8px 28px rgba(0,0,0,.28);
+      text-shadow:0 8px 28px rgba(0,0,0,.32);
     }
 
-    .gauge-unit{color:var(--muted);font-size:1.05rem;margin-top:9px}
+    .gauge-unit{color:var(--muted);font-size:1.05rem;margin-top:10px}
 
     .scale{
-      width:min(560px,86vw);
+      width:min(570px,86vw);
       display:flex;
       justify-content:space-between;
       color:#7d92b8;
       font-size:1rem;
-      margin-top:20px;
-      padding:0 18px;
+      margin-top:-12px;
+      padding:0 20px;
     }
 
     .controls{
@@ -383,10 +340,9 @@
       .results-grid{grid-template-columns:1fr}
       select,button{width:100%}
       .controls{flex-direction:column}
-      .gauge::before{inset:30px}
-      .center-cap{width:48px;height:48px}
-      .gauge-readout{transform:translateY(58px)}
+      .gauge-readout{transform:translate(-50%,-16%)}
       .gauge-value{letter-spacing:-3px}
+      .scale{margin-top:-6px;font-size:.92rem}
     }
   </style>
 </head>
@@ -406,10 +362,53 @@
     <main class="layout">
       <section class="card main-card">
         <div class="gauge-stage">
-          <div class="gauge" id="gauge">
-            <div class="tick-ring" id="tickRing"></div>
-            <div class="needle-wrap" id="needleWrap"><div class="needle"></div></div>
-            <div class="center-cap"></div>
+          <div class="gauge-box">
+            <svg class="gauge-svg" viewBox="0 0 620 430" aria-hidden="true">
+              <defs>
+                <linearGradient id="arcGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#25d9ff"/>
+                  <stop offset="60%" stop-color="#30e4c9"/>
+                  <stop offset="100%" stop-color="#23d16f"/>
+                </linearGradient>
+                <linearGradient id="needleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#ffffff"/>
+                  <stop offset="55%" stop-color="#25d9ff"/>
+                  <stop offset="100%" stop-color="#2f7dff"/>
+                </linearGradient>
+                <radialGradient id="capGradient">
+                  <stop offset="0%" stop-color="#f8fbff"/>
+                  <stop offset="58%" stop-color="#8acbff"/>
+                  <stop offset="100%" stop-color="#2f7dff"/>
+                </radialGradient>
+                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="3" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+                <filter id="glowSoft" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="2" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+                <filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feDropShadow dx="0" dy="0" stdDeviation="16" flood-color="#000000" flood-opacity=".5"/>
+                </filter>
+              </defs>
+
+              <circle class="inner-ring" cx="310" cy="310" r="188"></circle>
+              <path class="arc-bg" id="arcBg"></path>
+              <path class="arc-active" id="arcActive"></path>
+              <g id="tickGroup"></g>
+              <line class="needle-line" id="needleLine" x1="310" y1="310" x2="210" y2="410"></line>
+              <circle class="needle-tip" id="needleTip" cx="210" cy="410" r="7"></circle>
+              <circle class="center-cap-outer" cx="310" cy="310" r="35"></circle>
+              <circle class="center-cap-inner" cx="310" cy="310" r="25"></circle>
+            </svg>
+
             <div class="gauge-readout">
               <div class="gauge-label" id="gaugeLabel">LISTO</div>
               <div class="gauge-value" id="gaugeValue">0.00</div>
@@ -466,8 +465,11 @@
 
   <script>
     const els={
-      gauge:document.getElementById('gauge'),
-      tickRing:document.getElementById('tickRing'),
+      arcBg:document.getElementById('arcBg'),
+      arcActive:document.getElementById('arcActive'),
+      tickGroup:document.getElementById('tickGroup'),
+      needleLine:document.getElementById('needleLine'),
+      needleTip:document.getElementById('needleTip'),
       gaugeValue:document.getElementById('gaugeValue'),
       gaugeLabel:document.getElementById('gaugeLabel'),
       modeSelect:document.getElementById('modeSelect'),
@@ -489,25 +491,54 @@
       historyList:document.getElementById('historyList')
     };
 
-    const HISTORY_KEY='turbo_net_pro_history';
+    const HISTORY_KEY='turbo_net_pro_history_v3';
+    const CX=310;
+    const CY=310;
+    const R=230;
+    const ARC_START=135;
+    const ARC_END=405;
+    const NEEDLE_R=172;
+
     let displayedSpeed=0;
     let targetSpeed=0;
     let loopId=null;
     let totalDataUsedMb=0;
     let lastResult=null;
+    let pendingTicker=null;
 
-    function createTicks(){
-      const start=-135;
-      const sweep=270;
+    function polarPoint(cx,cy,r,angleDeg){
+      const rad=angleDeg*Math.PI/180;
+      return {x:cx+r*Math.cos(rad), y:cy+r*Math.sin(rad)};
+    }
+
+    function arcPath(startAngle,endAngle,r=R){
+      const start=polarPoint(CX,CY,r,startAngle);
+      const end=polarPoint(CX,CY,r,endAngle);
+      const largeArc=Math.abs(endAngle-startAngle)>180?1:0;
+      return `M ${start.x.toFixed(2)} ${start.y.toFixed(2)} A ${r} ${r} 0 ${largeArc} 1 ${end.x.toFixed(2)} ${end.y.toFixed(2)}`;
+    }
+
+    function createGauge(){
+      els.arcBg.setAttribute('d',arcPath(ARC_START,ARC_END));
+      els.arcActive.setAttribute('d',arcPath(ARC_START,ARC_START+.01));
+      els.tickGroup.innerHTML='';
+
       const count=28;
-      els.tickRing.innerHTML='';
       for(let i=0;i<=count;i++){
-        const tick=document.createElement('div');
-        tick.className='tick'+(i%7===0?' major':'');
-        const angle=start+(sweep/count)*i;
-        tick.style.transform=`translate(-50%,-50%) rotate(${angle}deg)`;
-        els.tickRing.appendChild(tick);
+        const angle=ARC_START+((ARC_END-ARC_START)/count)*i;
+        const major=i%7===0;
+        const outer=polarPoint(CX,CY,R+7,angle);
+        const inner=polarPoint(CX,CY,R-(major?25:16),angle);
+        const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1',inner.x.toFixed(2));
+        line.setAttribute('y1',inner.y.toFixed(2));
+        line.setAttribute('x2',outer.x.toFixed(2));
+        line.setAttribute('y2',outer.y.toFixed(2));
+        line.setAttribute('class','tick-line'+(major?' major':''));
+        els.tickGroup.appendChild(line);
       }
+
+      renderGauge(0,'LISTO');
     }
 
     function fmt(value,digits=2){return Number.isFinite(value)?value.toFixed(digits):'--'}
@@ -524,10 +555,15 @@
 
     function renderGauge(speed,label='LISTO'){
       const ratio=speedRatio(speed);
-      const arc=ratio*270;
-      const needle=-135+arc;
-      els.gauge.style.setProperty('--arc-angle',arc+'deg');
-      els.gauge.style.setProperty('--needle-angle',needle+'deg');
+      const angle=ARC_START+ratio*(ARC_END-ARC_START);
+      const needle=polarPoint(CX,CY,NEEDLE_R,angle);
+      els.arcActive.setAttribute('d',arcPath(ARC_START,Math.max(ARC_START+.01,angle)));
+      els.needleLine.setAttribute('x1',CX);
+      els.needleLine.setAttribute('y1',CY);
+      els.needleLine.setAttribute('x2',needle.x.toFixed(2));
+      els.needleLine.setAttribute('y2',needle.y.toFixed(2));
+      els.needleTip.setAttribute('cx',needle.x.toFixed(2));
+      els.needleTip.setAttribute('cy',needle.y.toFixed(2));
       els.gaugeValue.textContent=fmt(speed,2);
       els.gaugeLabel.textContent=label;
     }
@@ -536,6 +572,7 @@
 
     function animateGaugeTo(value,label='LISTO',duration=800){
       if(loopId) cancelAnimationFrame(loopId);
+      if(pendingTicker) clearInterval(pendingTicker);
       const start=displayedSpeed;
       const end=Number.isFinite(value)?value:0;
       const startTime=performance.now();
@@ -550,17 +587,32 @@
 
     function startLiveGauge(label){
       if(loopId) cancelAnimationFrame(loopId);
+      if(pendingTicker) clearInterval(pendingTicker);
       function loop(){
-        displayedSpeed += (targetSpeed-displayedSpeed)*0.10;
+        displayedSpeed += (targetSpeed-displayedSpeed)*0.12;
         renderGauge(displayedSpeed,label);
         loopId=requestAnimationFrame(loop);
       }
       loopId=requestAnimationFrame(loop);
     }
 
+    function startPendingGauge(label){
+      if(loopId) cancelAnimationFrame(loopId);
+      if(pendingTicker) clearInterval(pendingTicker);
+      let seed=Math.max(displayedSpeed,8);
+      targetSpeed=seed;
+      pendingTicker=setInterval(()=>{
+        seed=Math.max(8,seed+(Math.random()-.44)*12);
+        targetSpeed=seed;
+      },280);
+      startLiveGauge(label);
+    }
+
     function stopLiveGauge(finalSpeed,label){
       if(loopId) cancelAnimationFrame(loopId);
-      animateGaugeTo(finalSpeed,label,720);
+      if(pendingTicker) clearInterval(pendingTicker);
+      pendingTicker=null;
+      animateGaugeTo(finalSpeed,label,760);
     }
 
     function getModeConfig(){
@@ -571,8 +623,17 @@
     }
 
     function resetUI(){
-      totalDataUsedMb=0;lastResult=null;targetSpeed=0;
-      els.pingResult.textContent='--';els.jitterResult.textContent='--';els.downloadResult.textContent='--';els.uploadResult.textContent='--';els.lossResult.textContent='--';els.dataUsedResult.textContent='--';
+      totalDataUsedMb=0;
+      lastResult=null;
+      targetSpeed=0;
+      if(pendingTicker) clearInterval(pendingTicker);
+      pendingTicker=null;
+      els.pingResult.textContent='--';
+      els.jitterResult.textContent='--';
+      els.downloadResult.textContent='--';
+      els.uploadResult.textContent='--';
+      els.lossResult.textContent='--';
+      els.dataUsedResult.textContent='--';
       els.ratingResult.textContent='Esperando prueba';
       setStatus('Presiona “Iniciar test completo”.');
       resetSteps();
@@ -580,11 +641,12 @@
     }
 
     async function measurePing(samples){
-      const times=[];let failed=0;
+      const times=[];
+      let failed=0;
       for(let i=0;i<samples;i++){
         const start=performance.now();
         try{
-          const r=await fetch(`https://speed.cloudflare.com/cdn-cgi/trace?r=${Date.now()}-${i}`,{cache:'no-store'});
+          const r=await fetch(`https://speed.cloudflare.com/__down?bytes=0&r=${Date.now()}-${i}`,{cache:'no-store'});
           if(!r.ok) failed++;
         }catch{failed++}
         times.push(performance.now()-start);
@@ -597,13 +659,15 @@
     }
 
     async function measureDownload(bytes){
-      const url=`https://speed.cloudflare.com/__down?bytes=${bytes}&r=${Date.now()}`;
+      const measId=Date.now();
+      const url=`https://speed.cloudflare.com/__down?measId=${measId}&bytes=${bytes}&r=${Math.random()}`;
       targetSpeed=0;
       startLiveGauge('DESCARGA');
       const start=performance.now();
       let loaded=0;
       const response=await fetch(url,{cache:'no-store'});
       if(!response.ok) throw new Error('No se pudo medir la descarga.');
+
       if(!response.body){
         const blob=await response.blob();
         loaded=blob.size;
@@ -635,39 +699,32 @@
         chunks.push(arr);
         remaining-=size;
       }
-      return new Blob(chunks,{type:'application/octet-stream'});
-    }
-
-    function uploadXhr(url,blob){
-      return new Promise((resolve,reject)=>{
-        const xhr=new XMLHttpRequest();
-        xhr.open('POST',url,true);
-        const start=performance.now();
-        xhr.upload.onprogress=e=>{
-          const elapsed=(performance.now()-start)/1000;
-          if(elapsed>0 && e.loaded>0) targetSpeed=(e.loaded*8)/elapsed/1000/1000;
-        };
-        xhr.onload=()=>{
-          if(xhr.status>=200 && xhr.status<300){
-            const elapsed=(performance.now()-start)/1000;
-            const speed=(blob.size*8)/elapsed/1000/1000;
-            resolve({speed,bytes:blob.size});
-          }else reject(new Error('No se pudo medir la subida.'));
-        };
-        xhr.onerror=()=>reject(new Error('Error de red durante la subida.'));
-        xhr.send(blob);
-      });
+      return new Blob(chunks);
     }
 
     async function measureUpload(bytes){
-      const url=`https://speed.cloudflare.com/__up?r=${Date.now()}`;
+      const measId=Date.now();
+      const url=`https://speed.cloudflare.com/__up?measId=${measId}&bytes=${bytes}&r=${Math.random()}`;
       const blob=randomBlob(bytes);
-      targetSpeed=0;
-      startLiveGauge('SUBIDA');
-      const result=await uploadXhr(url,blob);
-      totalDataUsedMb+=result.bytes/1024/1024;
-      stopLiveGauge(result.speed,'SUBIDA');
-      return result.speed;
+      startPendingGauge('SUBIDA');
+      const start=performance.now();
+
+      try{
+        await fetch(url,{
+          method:'POST',
+          mode:'no-cors',
+          cache:'no-store',
+          body:blob
+        });
+      }catch(error){
+        throw new Error('No se pudo medir la subida desde este navegador o red.');
+      }
+
+      const elapsed=(performance.now()-start)/1000;
+      const speed=(blob.size*8)/elapsed/1000/1000;
+      totalDataUsedMb+=blob.size/1024/1024;
+      stopLiveGauge(speed,'SUBIDA');
+      return speed;
     }
 
     function rating(download,ping){
@@ -687,7 +744,10 @@
 
     function renderHistory(){
       const list=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');
-      if(!list.length){els.historyList.innerHTML='<div class="history-item">Sin resultados guardados</div>';return}
+      if(!list.length){
+        els.historyList.innerHTML='<div class="history-item">Sin resultados guardados</div>';
+        return;
+      }
       els.historyList.innerHTML=list.map(item=>`
         <div class="history-item">
           <div><small>${item.date}</small><div>${item.ping} ms ping • ${item.jitter} ms jitter</div></div>
@@ -703,23 +763,27 @@
     }
 
     async function runTest(){
-      resetUI();setBusy(true);
+      resetUI();
+      setBusy(true);
       try{
         const config=getModeConfig();
 
-        activateStep(els.stepPing);setStatus('Midiendo latencia...');
+        activateStep(els.stepPing);
+        setStatus('Midiendo latencia...');
         const ping=await measurePing(config.pingSamples);
         els.pingResult.textContent=fmt(ping.average,0);
         els.jitterResult.textContent=fmt(ping.jitter,0);
         els.lossResult.textContent=fmt(ping.loss,0);
         setStep(els.stepPing,true);
 
-        activateStep(els.stepDownload);setStatus('Midiendo descarga...');
+        activateStep(els.stepDownload);
+        setStatus('Midiendo descarga...');
         const down=await measureDownload(config.downloadBytes);
         els.downloadResult.textContent=fmt(down,2);
         setStep(els.stepDownload,true);
 
-        activateStep(els.stepUpload);setStatus('Midiendo subida...');
+        activateStep(els.stepUpload);
+        setStatus('Midiendo subida...');
         const up=await measureUpload(config.uploadBytes);
         els.uploadResult.textContent=fmt(up,2);
         setStep(els.stepUpload,true);
@@ -752,7 +816,7 @@
     els.copyBtn.addEventListener('click',copyResult);
     els.resetBtn.addEventListener('click',resetUI);
 
-    createTicks();
+    createGauge();
     renderHistory();
     resetUI();
   </script>

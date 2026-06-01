@@ -1,27 +1,24 @@
-# turbo_net Pro
+# turbo_net
 
-Test de velocidad web con servicios externos de Cloudflare.
+Versión pro del test de velocidad web.
 
 ## Archivos necesarios
 
+Solo necesitas subir estos archivos a GitHub Pages:
+
 - `index.html`
+- `README.md`
 - `.nojekyll`
 
-No requiere archivos `.bin` ni servidor propio.
+No uses archivos `.bin` ni `upload-worker.js`.
 
-## Publicación en GitHub Pages
+## Publicación
 
 1. Sube los archivos al repositorio.
-2. Activa GitHub Pages desde `Settings > Pages`.
-3. Selecciona `Deploy from branch`, rama `main`, carpeta `/root`.
+2. En GitHub, entra a `Settings > Pages`.
+3. Selecciona `Deploy from branch`.
+4. Usa la rama `main` y la carpeta `/root`.
 
-## Funciones
+## Medición
 
-- Ping
-- Jitter
-- Descarga
-- Subida
-- Pérdida HTTP
-- Historial local
-- Copiar resultado
-- Interfaz tipo velocímetro con aguja animada
+La página usa endpoints externos de Cloudflare para descarga y subida.
