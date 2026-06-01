@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test de Velocidad</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --card-2: #1f2937;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #22c55e;
+      --warning: #facc15;
+      --danger: #fb7185;
+      --border: rgba(255, 255, 255, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1e3a8a 0%, var(--bg) 42%, #020617 100%);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 980px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 4rem);
+      margin-bottom: 10px;
+      letter-spacing: -1px;
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    .panel {
+      background: rgba(17, 24, 39, 0.86);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(12px);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    button,
+    select {
+      border: none;
+      border-radius: 999px;
+      padding: 13px 18px;
+      font-size: 0.95rem;
+    }
+
+    button {
+      background: linear-gradient(135deg, var(--accent), #2563eb);
+      color: white;
+      cursor: pointer;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(56, 189, 248, 0.25);
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    select {
+      background: var(--card-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      min-width: 190px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .metric {
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 0.85rem;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .metric strong {
+      font-size: clamp(1.6rem, 4vw, 2.7rem);
+      display: block;
+      line-height: 1;
+    }
+
+    .metric small {
+      color: var(--muted);
+      display: block;
+      margin-top: 8px;
+    }
+
+    .progress-wrap {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      height: 18px;
+      border: 1px solid var(--border);
+      margin-bottom: 14px;
+    }
+
+    .progress {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 0.15s linear;
+    }
+
+    .status {
+      color: var(--muted);
+      text-align: center;
+      min-height: 24px;
+      line-height: 1.5;
+    }
+
+    .note {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(250, 204, 21, 0.10);
+      border: 1px solid rgba(250, 204, 21, 0.25);
+      color: #fde68a;
+      line-height: 1.45;
+      font-size: 0.92rem;
+    }
+
+    .instructions {
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .instructions code {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    @media (max-width: 760px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        padding: 18px;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      button,
+      select {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="hero">
+      <h1>Test de velocidad</h1>
+      <p>
+        Mide la latencia y la velocidad de descarga de tu conexión usando archivos alojados en esta misma página.
+      </p>
+    </section>
+
+    <section class="panel">
+      <div class="actions">
+        <select id="fileSelect" aria-label="Tamaño de archivo para la prueba">
+          <option value="speedtest_10mb.bin" data-size="10">Prueba rápida: 10 MB</option>
+          <option value="speedtest_50mb.bin" data-size="50">Prueba media: 50 MB</option>
+          <option value="speedtest_100mb.bin" data-size="100">Prueba larga: 100 MB</option>
+        </select>
+        <button id="startBtn">Iniciar test</button>
+        <button id="resetBtn" type="button">Reiniciar</button>
+      </div>
+
+      <div class="grid">
+        <article class="metric">
+          <span>Latencia</span>
+          <strong id="pingResult">--</strong>
+          <small>ms</small>
+        </article>
+
+        <article class="metric">
+          <span>Descarga</span>
+          <strong id="downloadResult">--</strong>
+          <small>Mbps</small>
+        </article>
+
+        <article class="metric">
+          <span>Jitter</span>
+          <strong id="jitterResult">--</strong>
+          <small>ms</small>
+        </article>
+      </div>
+
+      <div class="progress-wrap" aria-label="Progreso de descarga">
+        <div class="progress" id="progressBar"></div>
+      </div>
+
+      <p class="status" id="status">Presiona “Iniciar test” para comenzar.</p>
+
+      <div class="note">
+        Importante: en GitHub Pages este test puede medir latencia y descarga. La velocidad de subida no se puede medir de forma real sin un servidor externo que reciba datos.
+      </div>
+
+      <div class="instructions">
+        <p><strong>Archivos necesarios:</strong> sube junto a este <code>index.html</code> los archivos <code>speedtest_10mb.bin</code>, <code>speedtest_50mb.bin</code> y <code>speedtest_100mb.bin</code>.</p>
+        <p>Si solo quieres una versión simple, basta con subir <code>speedtest_10mb.bin</code> y usar la opción de 10 MB.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const fileSelect = document.getElementById('fileSelect');
+    const pingResult = document.getElementById('pingResult');
+    const downloadResult = document.getElementById('downloadResult');
+    const jitterResult = document.getElementById('jitterResult');
+    const progressBar = document.getElementById('progressBar');
+    const statusText = document.getElementById('status');
+
+    function resetUI() {
+      pingResult.textContent = '--';
+      downloadResult.textContent = '--';
+      jitterResult.textContent = '--';
+      progressBar.style.width = '0%';
+      statusText.textContent = 'Presiona “Iniciar test” para comenzar.';
+    }
+
+    function formatNumber(value, decimals = 2) {
+      return Number.isFinite(value) ? value.toFixed(decimals) : '--';
+    }
+
+    async function measurePing(samples = 6) {
+      const results = [];
+
+      for (let i = 0; i < samples; i++) {
+        const start = performance.now();
+        await fetch(`./index.html?ping=${Date.now()}-${i}`, {
+          method: 'GET',
+          cache: 'no-store'
+        });
+        const end = performance.now();
+        results.push(end - start);
+        await new Promise(resolve => setTimeout(resolve, 120));
+      }
+
+      const average = results.reduce((sum, value) => sum + value, 0) / results.length;
+      const jitter = results
+        .slice(1)
+        .map((value, index) => Math.abs(value - results[index]))
+        .reduce((sum, value) => sum + value, 0) / (results.length - 1);
+
+      return { average, jitter };
+    }
+
+    async function measureDownload() {
+      const selectedOption = fileSelect.options[fileSelect.selectedIndex];
+      const fileName = fileSelect.value;
+      const sizeMb = Number(selectedOption.dataset.size);
+      const url = `${fileName}?nocache=${Date.now()}`;
+
+      progressBar.style.width = '0%';
+      statusText.textContent = `Descargando archivo de ${sizeMb} MB...`;
+
+      const start = performance.now();
+      const response = await fetch(url, { cache: 'no-store' });
+
+      if (!response.ok) {
+        throw new Error(`No se encontró el archivo ${fileName}. Súbelo al repositorio junto al index.html.`);
+      }
+
+      const contentLength = Number(response.headers.get('content-length'));
+
+      if (response.body && contentLength) {
+        const reader = response.body.getReader();
+        let received = 0;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          received += value.length;
+          const percentage = Math.min((received / contentLength) * 100, 100);
+          progressBar.style.width = `${percentage}%`;
+        }
+      } else {
+        await response.blob();
+        progressBar.style.width = '100%';
+      }
+
+      const end = performance.now();
+      const durationSeconds = (end - start) / 1000;
+      const speedMbps = (sizeMb * 8) / durationSeconds;
+
+      return speedMbps;
+    }
+
+    async function startTest() {
+      startBtn.disabled = true;
+      fileSelect.disabled = true;
+      resetUI();
+
+      try {
+        statusText.textContent = 'Midiendo latencia...';
+        const ping = await measurePing();
+        pingResult.textContent = formatNumber(ping.average, 0);
+        jitterResult.textContent = formatNumber(ping.jitter, 0);
+
+        const speed = await measureDownload();
+        downloadResult.textContent = formatNumber(speed, 2);
+        statusText.textContent = 'Test finalizado correctamente.';
+      } catch (error) {
+        statusText.textContent = error.message || 'Ocurrió un error durante la prueba.';
+        progressBar.style.width = '0%';
+      } finally {
+        startBtn.disabled = false;
+        fileSelect.disabled = false;
+      }
+    }
+
+    startBtn.addEventListener('click', startTest);
+    resetBtn.addEventListener('click', resetUI);
+  </script>
+</body>
+</html>
